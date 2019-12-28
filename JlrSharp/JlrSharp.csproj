@@ -9,4 +9,8 @@
     <None Remove=".gitignore" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="RestSharp" Version="106.6.10" />
+  </ItemGroup>
+
 </Project>

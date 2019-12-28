@@ -9,4 +9,8 @@
     <None Remove=".gitignore" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\JlrSharp\JlrSharp.csproj" />
+  </ItemGroup>
+
 </Project>

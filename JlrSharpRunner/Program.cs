@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using GreyMan.JlrSharp;
 
 namespace JlrSharpRunner
 {
@@ -6,7 +8,9 @@ namespace JlrSharpRunner
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Trace.Listeners.Add(new ConsoleTraceListener());
+            JlrSharpConnection jlrSharp = new JlrSharpConnection();
+            jlrSharp.Connect();
         }
     }
 }
