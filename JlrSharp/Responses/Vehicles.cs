@@ -31,14 +31,15 @@ namespace GreyMan.JlrSharp.Responses
         /// </summary>
         public void StartEngine(string pin)
         {
-            RestRequest startEngineRequest = new RestRequest($"vehicles/{vin}/engineOn", Method.POST);
-            ApiResponse result = GenerateAuthenticationToken("REON", pin);
-            startEngineRequest.AddHeader("Accept", "");
-            startEngineRequest.AddHeader("Content-Type", @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json");
-            startEngineRequest.AddJsonBody(result);
-            IRestResponse startResponse = VehicleRequestClient.Execute(startEngineRequest);
+            HttpHeaders httpHeaders = new HttpHeaders
+            {
+                ["Accept"] = "",
+                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json",
+            };
 
-            if (!startResponse.IsSuccessful)
+            IRestResponse stopResponse = PostRequest($"vehicles/{vin}/engineOn", httpHeaders, GenerateAuthenticationToken("REON", pin));
+
+            if (!stopResponse.IsSuccessful)
             {
                 throw new InvalidOperationException("Error starting engine");
             }
@@ -49,12 +50,13 @@ namespace GreyMan.JlrSharp.Responses
         /// </summary>
         public void StopEngine(string pin)
         {
-            RestRequest stopEngineRequest = new RestRequest($"vehicles/{vin}/engineOff", Method.POST);
-            ApiResponse result = GenerateAuthenticationToken("REOFF", pin);
-            stopEngineRequest.AddHeader("Accept", "");
-            stopEngineRequest.AddHeader("Content-Type", @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json");
-            stopEngineRequest.AddJsonBody(result);
-            IRestResponse stopResponse = VehicleRequestClient.Execute(stopEngineRequest);
+            HttpHeaders httpHeaders = new HttpHeaders
+            {
+                ["Accept"] = "",
+                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json",
+            };
+
+            IRestResponse stopResponse = PostRequest($"vehicles/{vin}/engineOff", httpHeaders, GenerateAuthenticationToken("REOFF", pin));
 
             if (!stopResponse.IsSuccessful)
             {
@@ -68,9 +70,12 @@ namespace GreyMan.JlrSharp.Responses
         /// </summary>
         public void GetCurrentClimateSettings()
         {
-            RestRequest climateTempRequest = new RestRequest($"vehicles/{vin}/settings/ClimateControlRccTargetTemp", Method.GET, DataFormat.Json);
-            climateTempRequest.AddHeader("Content-Type", "application/json");
-            IRestResponse climateTempResponse = VehicleRequestClient.Execute(climateTempRequest);
+            HttpHeaders httpHeaders = new HttpHeaders
+            {
+                ["Content-Type"] = "application/json",
+            };
+
+            IRestResponse climateTempResponse = GetRequest($"vehicles/{vin}/settings/ClimateControlRccTargetTemp", httpHeaders);
 
             if (!climateTempResponse.IsSuccessful)
             {
@@ -81,13 +86,16 @@ namespace GreyMan.JlrSharp.Responses
         // TODO: This currently doesn't work
         public void SetClimateTemperature(string targetTemperature = "25")
         {
-            RestRequest climateTempSetRequest = new RestRequest($"vehicles/{vin}/settings/", Method.POST, DataFormat.Json);
-            climateTempSetRequest.AddHeader("Content-Type", "application/json");
-            climateTempSetRequest.AddJsonBody(new ClimateControlSettings()); 
-            IRestResponse climateTempResponse = VehicleRequestClient.Execute(climateTempSetRequest);
+            RestRequest climateTempSetRequest = new RestRequest($"vehicles/{vin}/settings/", Method.POST);
 
-            if (!climateTempResponse.IsSuccessful ||
-                climateTempResponse.StatusCode == System.Net.HttpStatusCode.NoContent)
+            HttpHeaders httpHeaders = new HttpHeaders
+            {
+                ["Content-Type"] = "application/json",
+            };
+
+            IRestResponse climateTempResponse = PostRequest($"vehicles/{vin}/settings", httpHeaders, new ClimateControlSettings());
+
+            if (!climateTempResponse.IsSuccessful || climateTempResponse.StatusCode == System.Net.HttpStatusCode.NoContent)
             {
                 throw new InvalidOperationException("Error setting climate target setting");
             }
@@ -101,16 +109,15 @@ namespace GreyMan.JlrSharp.Responses
         /// <param name="targetTemperature">Temperature is expressed without decimal point. 210 = 21.0</param>
         public void EvClimatePreconditioning(string pin, bool startStop, string targetTemperature = "210")
         {
-            RestRequest climateRequest = new RestRequest($"vehicles/{vin}/preconditioning", Method.POST);
-            climateRequest.AddHeader("Content-Type", @"application/vnd.wirelesscar.ngtp.if9.PhevService-v1+json; charset=utf");
-            climateRequest.AddHeader("Accept", @"application/vnd.wirelesscar.ngtp.if9.ServiceStatus-v5+json");
+            HttpHeaders httpHeaders = new HttpHeaders
+            {
+                ["Accept"] = @"application/vnd.wirelesscar.ngtp.if9.ServiceStatus-v5+json",
+                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.PhevService-v1+json; charset=utf",
+            };
+
             ApiResponse climateToken = GenerateAuthenticationToken("ECC", pin);
-            climateRequest.AddJsonBody(new EvClimatePreconditioningSettings(climateToken["token"], startStop, targetTemperature));
-            string debug =
-                JsonSerializer.Serialize(
-                    new EvClimatePreconditioningSettings(climateToken["token"], startStop, targetTemperature));
-            
-            IRestResponse climateResponse = VehicleRequestClient.Execute(climateRequest);
+            IRestResponse climateResponse = PostRequest($"vehicles/{vin}/preconditioning", httpHeaders,
+                new EvClimatePreconditioningSettings(climateToken["token"], startStop, targetTemperature));
 
             if (!climateResponse.IsSuccessful)
             {
@@ -142,12 +149,13 @@ namespace GreyMan.JlrSharp.Responses
         /// </summary>
         public void HonkAndBlink()
         {
-            RestRequest honkBlinkRequest = new RestRequest($"vehicles/{vin}/honkBlink", Method.POST);
-            honkBlinkRequest.AddHeader("Content-Type", @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v3+json; charset=utf-8");
-            honkBlinkRequest.AddHeader("Accept", @"application/vnd.wirelesscar.ngtp.if9.ServiceStatus-v4+json");
-            honkBlinkRequest.AddJsonBody(GenerateAuthenticationToken("HBLF", GetVinProtectedPin()));
+            HttpHeaders httpHeaders = new HttpHeaders
+            {
+                ["Accept"] = @"application/vnd.wirelesscar.ngtp.if9.ServiceStatus-v4+json",
+                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v3+json; charset=utf-8",
+            };
 
-            IRestResponse honkBlinkResponse = VehicleRequestClient.Execute(honkBlinkRequest);
+            IRestResponse honkBlinkResponse = PostRequest($"vehicles/{vin}/honkBlink", httpHeaders, GenerateAuthenticationToken("HBLF", GetVinProtectedPin()));
 
             if (!honkBlinkResponse.IsSuccessful)
             {
@@ -160,14 +168,16 @@ namespace GreyMan.JlrSharp.Responses
         /// </summary>
         public void Lock(string pin)
         {
-            RestRequest lockRequest = new RestRequest($"vehicles/{vin}/lock", Method.POST);
-            lockRequest.AddHeader("Accept", "");
-            lockRequest.AddHeader("Content-Type", @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json");
-            lockRequest.AddJsonBody(GenerateAuthenticationToken("RDL", pin));
+            HttpHeaders httpHeaders = new HttpHeaders
+            {
+                ["Accept"] = "",
+                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json"
+            };
 
-            IRestResponse lockResponse = VehicleRequestClient.Execute(lockRequest);
+            IRestResponse unlockResponse = PostRequest($"vehicles/{vin}/lock", httpHeaders,
+                GenerateAuthenticationToken("RDL", pin));
 
-            if (!lockResponse.IsSuccessful)
+            if (!unlockResponse.IsSuccessful)
             {
                 throw new InvalidOperationException("Error locking vehicle");
             }
@@ -178,12 +188,14 @@ namespace GreyMan.JlrSharp.Responses
         /// </summary>
         public void Unlock(string pin)
         {
-            RestRequest unlockRequest = new RestRequest($"vehicles/{vin}/unlock", Method.POST);
-            unlockRequest.AddHeader("Accept", "");
-            unlockRequest.AddHeader("Content-Type", @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json");
-            unlockRequest.AddJsonBody(GenerateAuthenticationToken("RDU", pin));
+            HttpHeaders httpHeaders = new HttpHeaders
+            {
+                ["Accept"] = "",
+                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json"
+            };
 
-            IRestResponse unlockResponse = VehicleRequestClient.Execute(unlockRequest);
+            IRestResponse unlockResponse = PostRequest($"vehicles/{vin}/unlock", httpHeaders,
+                GenerateAuthenticationToken("RDU", pin));
             
             if (!unlockResponse.IsSuccessful)
             {
@@ -197,12 +209,13 @@ namespace GreyMan.JlrSharp.Responses
         /// <returns></returns>
         public VehicleHealthReport GetVehicleHealth()
         {
-            RestRequest healthRequest = new RestRequest($"vehicles/{vin}/healthstatus", Method.POST);
-            healthRequest.AddHeader("Accept", @"application/vnd.wirelesscar.ngtp.if9.ServiceStatus-v4+json");
-            healthRequest.AddHeader("Content-Type", @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v3+json; charset=utf-8");
-            healthRequest.AddJsonBody(GenerateAuthenticationToken("VHS"));
+            HttpHeaders httpHeaders = new HttpHeaders
+            {
+                ["Accept"] = @"application/vnd.wirelesscar.ngtp.if9.ServiceStatus-v4+json",
+                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v3+json; charset=utf-8"
+            };
 
-            IRestResponse healthResponse = VehicleRequestClient.Execute(healthRequest);
+            IRestResponse healthResponse = PostRequest($"vehicles/{vin}/healthstatus", httpHeaders, GenerateAuthenticationToken("VHS"));
 
             if (!healthResponse.IsSuccessful)
             {
@@ -217,9 +230,28 @@ namespace GreyMan.JlrSharp.Responses
         /// </summary>
         public void GetSubscriptions()
         {
-            RestRequest subscriptionRequest = new RestRequest($"vehicles/{vin}/subscriptionpackages", Method.GET, DataFormat.Json);
-            IRestResponse subscriptionResponse = VehicleRequestClient.Execute(subscriptionRequest);
-            System.IO.File.WriteAllText(@"c:\users\Chris\appdata\local\temp\content.txt", subscriptionResponse.Content);
+            IRestResponse subscriptionResponse = GetRequest($"vehicles/{vin}/subscriptionpackages", new HttpHeaders());
+
+            if (!subscriptionResponse.IsSuccessful)
+            {
+                throw new InvalidOperationException("Error getting vehicle subscriptions");
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the next service due in miles
+        /// </summary>
+        public void RefreshVehicleStatusReport()
+        {
+            HttpHeaders httpHeaders = new HttpHeaders {["Accept"] = @"application/vnd.ngtp.org.if9.healthstatus-v2+json"};
+            IRestResponse<VehicleStatusReport> vehicleStatusResponse = GetRequest<VehicleStatusReport>($"vehicles/{vin}/status", httpHeaders);
+
+            if (!vehicleStatusResponse.IsSuccessful)
+            {
+                throw new InvalidOperationException("Error retrieving vehicle status report");
+            }
+
+            VehicleStatus = vehicleStatusResponse.Data;
         }
 
         /// <summary>
@@ -231,10 +263,8 @@ namespace GreyMan.JlrSharp.Responses
         private ApiResponse GenerateAuthenticationToken(string serviceName, string pin = "")
         {
             TokenData tokenData = GenerateTokenData(serviceName, pin);
-            RestRequest tokenRequest = new RestRequest($"vehicles/{vin}/users/{userId}/authenticate", Method.POST);
-            tokenRequest.AddHeader("Content-Type", @"application/vnd.wirelesscar.ngtp.if9.AuthenticateRequest-v2+json; charset=utf-8");
-            tokenRequest.AddJsonBody(tokenData);
-            IRestResponse tokenResponse = VehicleRequestClient.Execute(tokenRequest);
+            HttpHeaders httpHeaders = new HttpHeaders {["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.AuthenticateRequest-v2+json; charset=utf-8"};
+            IRestResponse tokenResponse = PostRequest($"vehicles/{vin}/users/{userId}/authenticate", httpHeaders, tokenData);
 
             if (!tokenResponse.IsSuccessful)
             {
@@ -264,27 +294,73 @@ namespace GreyMan.JlrSharp.Responses
         /// <summary>
         /// Generates a pin based on the last 4 digits of the VIN
         /// </summary>
-        /// <returns></returns>
         private string GetVinProtectedPin()
         {
             return vin.Substring(vin.Length - 4, 4);
         }
 
         /// <summary>
-        /// Retrieves the next service due in miles
+        /// Used to make Rest GET requests and re-validate the token if required
         /// </summary>
-        public void RefreshVehicleStatusReport()
+        /// <param name="httpHeaders"></param>
+        /// <returns>Completed rest request</returns>
+        private IRestResponse GetRequest(string url, HttpHeaders httpHeaders)
         {
-            RestRequest vehicleStatusRequest = new RestRequest($"vehicles/{vin}/status", Method.GET, DataFormat.Json);
-            vehicleStatusRequest.AddHeader("Accept", @"application/vnd.ngtp.org.if9.healthstatus-v2+json");
-            IRestResponse<VehicleStatusReport> vehicleStatusResponse = VehicleRequestClient.Execute<VehicleStatusReport>(vehicleStatusRequest);
-            
-            if (!vehicleStatusResponse.IsSuccessful)
-            {
-                throw new InvalidOperationException("Error retrieving vehicle status report");
-            }
+            RestRequest restRequest = new RestRequest(url, Method.GET, DataFormat.Json);
+            UpdateRestRequestHeaders(restRequest, httpHeaders);
+            return VehicleRequestClient.Execute(restRequest);
+        }
 
-            VehicleStatus = vehicleStatusResponse.Data;
+        /// <summary>
+        /// Used to make Rest GET requests and re-validate the token if required
+        /// </summary>
+        /// <param name="httpHeaders"></param>
+        /// <returns>Completed rest request</returns>
+        private IRestResponse<T> GetRequest<T>(string url, HttpHeaders httpHeaders) where T : new()
+        {
+            RestRequest restRequest = new RestRequest(url, Method.GET, DataFormat.Json);
+            UpdateRestRequestHeaders(restRequest, httpHeaders);
+            return VehicleRequestClient.Execute<T>(restRequest);
+        }
+
+        /// <summary>
+        /// Used to make Rest POST requests and re-validate the token if required
+        /// </summary>
+        /// <param name="httpHeaders"></param>
+        /// <returns>Completed rest request</returns>
+        private IRestResponse PostRequest(string url, HttpHeaders httpHeaders, object payloadData)
+        {
+            RestRequest restRequest = new RestRequest(url, Method.POST);
+            UpdateRestRequestHeaders(restRequest, httpHeaders);
+            restRequest.AddJsonBody(payloadData);
+            return VehicleRequestClient.Execute(restRequest);
+        }
+
+        /// <summary>
+        /// Used to make Rest POST requests and re-validate the token if required
+        /// </summary>
+        /// <param name="httpHeaders"></param>
+        /// <returns>Completed rest request</returns>
+        private IRestResponse<T> PostRequest<T>(string url, HttpHeaders httpHeaders, object payloadData) where T : new()
+        {
+            RestRequest restRequest = new RestRequest(url, Method.POST);
+            UpdateRestRequestHeaders(restRequest, httpHeaders);
+            restRequest.AddJsonBody(payloadData);
+            return VehicleRequestClient.Execute<T>(restRequest);
+        }
+
+        /// <summary>
+        /// Adds all custom headers to the RestRequest being constructed
+        /// </summary>
+        /// <param name="restRequest"></param>
+        /// <param name="httpHeaders"></param>
+        private void UpdateRestRequestHeaders(RestRequest restRequest, HttpHeaders httpHeaders)
+        {
+            //Add all the custom headers to the request
+            foreach (string httpHeaderKey in httpHeaders.Keys)
+            {
+                restRequest.AddHeader(httpHeaderKey, httpHeaders[httpHeaderKey]);
+            }
         }
 
         /// <summary>

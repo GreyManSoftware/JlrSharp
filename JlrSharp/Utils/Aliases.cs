@@ -24,4 +24,11 @@ namespace GreyMan.JlrSharp.Utils
     public class TokenData : Dictionary<string, string>
     {
     }
+
+    /// <summary>
+    /// This is used to wrap HTTP headers
+    /// </summary>
+    public class HttpHeaders : Dictionary<string, string>
+    {
+    }
 }
