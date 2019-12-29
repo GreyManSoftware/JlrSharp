@@ -31,7 +31,7 @@ namespace GreyMan.JlrSharp
 
         // Authentication details
         private TokenStore _tokens;
-        private readonly Oauth _oauth; // This can't be readonly if we build reconnect()
+        private Oauth _oauth; // This can't be readonly if we build reconnect()
 
         // Associated vehicles
         private VehicleCollection _vehicles;
@@ -112,6 +112,11 @@ namespace GreyMan.JlrSharp
             }
 
             _tokens = response.Data;
+            _oauth = new Oauth
+            {
+                ["grant_type"] = "refresh_token",
+                ["refresh_token"] = _tokens.refresh_token
+            };
 
             Trace.TraceInformation("Authentication complete");
 
@@ -229,14 +234,28 @@ namespace GreyMan.JlrSharp
 
             foreach (Vehicle vehicle in _vehicles.Vehicles)
             {
-                vehicle.SetVehicleRequestClient(_vehicleClient);
+                vehicle.SetVehicleRequestClient(_vehicleClient, this);
             }
         }
 
-        // This should override the oauth token using the refresh token?
-        private void RefreshToken()
+        /// <summary>
+        /// Updates the tokens if required
+        /// </summary>
+        /// <returns>Returns true if the tokens were refreshed</returns>
+        public bool UpdateIfRequired(bool performRefresh)
         {
-            throw new NotImplementedException();
+            if (DateTime.Now.AddMinutes(5) <= _tokens.ExpirationTime)
+            {
+                return false;
+            }
+
+            if (!performRefresh)
+            {
+                return false; 
+            }
+
+            Connect();
+            return true;
         }
     }
 }
