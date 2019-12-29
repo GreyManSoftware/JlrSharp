@@ -278,7 +278,7 @@ namespace GreyMan.JlrSharp.Responses
             RestRequest vehicleStatusRequest = new RestRequest($"vehicles/{vin}/status", Method.GET, DataFormat.Json);
             vehicleStatusRequest.AddHeader("Accept", @"application/vnd.ngtp.org.if9.healthstatus-v2+json");
             IRestResponse<VehicleStatusReport> vehicleStatusResponse = VehicleRequestClient.Execute<VehicleStatusReport>(vehicleStatusRequest);
-
+            
             if (!vehicleStatusResponse.IsSuccessful)
             {
                 throw new InvalidOperationException("Error retrieving vehicle status report");

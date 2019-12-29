@@ -9,23 +9,22 @@ namespace JlrSharpRunner
     {
         static void Main(string[] args)
         {
+            string myPin = "1234";
             Trace.Listeners.Add(new ConsoleTraceListener());
 
-            JlrSharpConnection jlrSharp = new JlrSharpConnection();
+            JlrSharpConnection jlrSharp = new JlrSharpConnection("your@email_address.com", "your_password");
 
             Trace.TraceInformation("Grabbing default vehicle");
             Vehicle defaultVehicle = jlrSharp.GetPrimaryVehicle();
 
-            //VehicleHealthReport healthReport = defaultVehicle.GetVehicleHealth();
+            // Basic functionality
+            VehicleHealthReport healthReport = defaultVehicle.GetVehicleHealth();
             defaultVehicle.GetNextServiceDue();
-            //defaultVehicle.HonkAndBlink();
-            //defaultVehicle.Unlock("1253");
-            //defaultVehicle.Lock("1253");
-            //defaultVehicle.GetCurrentClimateSettings();
-            //defaultVehicle.StartEngine("1253");
-            //defaultVehicle.SetClimateTemperature("28");
-            //defaultVehicle.GetCurrentClimateSettings();
-            //defaultVehicle.StopEngine("1253");
+            defaultVehicle.HonkAndBlink();
+            defaultVehicle.Unlock(myPin);
+            defaultVehicle.Lock(myPin);
+            defaultVehicle.StartEngine(myPin);
+            defaultVehicle.StopEngine(myPin);
         }
     }
 }
