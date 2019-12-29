@@ -6,20 +6,15 @@ using RestSharp.Deserializers;
 namespace GreyMan.JlrSharp.Responses
 {
     [Serializable]
-    public class TokenStore
+    public sealed class TokenStore
     {
-        [DeserializeAs(Name = "access_token")]
-        public string AccessToken { get; set; }
-        [DeserializeAs(Name = "authorization_token")]
-        public string AuthorizationToken { get; set; }
-        [DeserializeAs(Name = "expires_in")]
-        public string ExpiresIn { get; set; }
-        [DeserializeAs(Name = "refresh_token")]
-        public string RefreshToken { get; set; }
-        [DeserializeAs(Name = "token_type")]
-        public string TokenType { get; set; }
+        public string access_token { get; set; }
+        public string authorization_token { get; set; }
+        public string expires_in { get; set; }
+        public string refresh_token { get; set; }
+        public string token_type { get; set; }
         
         private DateTime _timeOfCreation = DateTime.Now;
-        public DateTime ExpirationTime => _timeOfCreation.AddSeconds(Convert.ToInt32(ExpiresIn));
+        public DateTime ExpirationTime => _timeOfCreation.AddSeconds(Convert.ToInt32(expires_in));
     }
 }
