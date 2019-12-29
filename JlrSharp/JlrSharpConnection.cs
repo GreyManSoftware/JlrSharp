@@ -180,7 +180,7 @@ namespace GreyMan.JlrSharp
             IRestResponse registrationResponse = _deviceClient.Execute(deviceRegistrationRequest);
 
             // HTTP Response code 204 indicates success
-            if (!registrationResponse.IsSuccessful && registrationResponse.StatusCode == System.Net.HttpStatusCode.NoContent)
+            if (!registrationResponse.IsSuccessful || registrationResponse.StatusCode != System.Net.HttpStatusCode.NoContent)
             {
                 throw new InvalidOperationException("Error registering device");
             }
