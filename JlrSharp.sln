@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JlrSharp", "JlrSharp\JlrSharp.csproj", "{BE6FB006-9272-4367-B9FD-1FBB678F3172}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JlrSharpRunner", "JlrSharpRunner\JlrSharpRunner.csproj", "{C09200AB-E6D1-4C07-ABD5-0B80DB53EEC8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BE6FB006-9272-4367-B9FD-1FBB678F3172}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE6FB006-9272-4367-B9FD-1FBB678F3172}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE6FB006-9272-4367-B9FD-1FBB678F3172}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE6FB006-9272-4367-B9FD-1FBB678F3172}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C09200AB-E6D1-4C07-ABD5-0B80DB53EEC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C09200AB-E6D1-4C07-ABD5-0B80DB53EEC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C09200AB-E6D1-4C07-ABD5-0B80DB53EEC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C09200AB-E6D1-4C07-ABD5-0B80DB53EEC8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6E1AFE40-4D79-424F-9204-D5EE712B71B2}
+	EndGlobalSection
+EndGlobal
