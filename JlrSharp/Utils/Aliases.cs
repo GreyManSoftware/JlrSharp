@@ -7,7 +7,7 @@ namespace GreyMan.JlrSharp.Utils
     /// <summary>
     /// A wrapper for the OAuth token
     /// </summary>
-    public class Oauth : Dictionary<string, string>
+    public class OAuth : Dictionary<string, string>
     {
     }
 
@@ -22,6 +22,13 @@ namespace GreyMan.JlrSharp.Utils
     /// This is used to wrap the data for additional token requests such as VHS, ECC, CP, RDL etc...
     /// </summary>
     public class TokenData : Dictionary<string, string>
+    {
+    }
+
+    /// <summary>
+    /// This is used to wrap HTTP headers
+    /// </summary>
+    public class HttpHeaders : Dictionary<string, string>
     {
     }
 }

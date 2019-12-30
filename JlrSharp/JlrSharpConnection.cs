@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
 using GreyMan.JlrSharp.Responses;
@@ -31,7 +32,7 @@ namespace GreyMan.JlrSharp
 
         // Authentication details
         private TokenStore _tokens;
-        private readonly Oauth _oauth; // This can't be readonly if we build reconnect()
+        private OAuth _oAuth; // This can't be readonly if we build reconnect()
 
         // Associated vehicles
         private VehicleCollection _vehicles;
@@ -51,14 +52,14 @@ namespace GreyMan.JlrSharp
             };
 
             // Construct a oauth token using the provided credentials
-            _oauth = new Oauth
+            _oAuth = new OAuth
             {
                 ["grant_type"] = "password",
                 ["username"] = email,
                 ["password"] = password
             };
 
-            Connect();
+            Connect(_oAuth);
             // TODO: Have a thread that refreshes the tokens?
         }
 
@@ -76,19 +77,19 @@ namespace GreyMan.JlrSharp
                 DeviceId = Validators.GenerateDeviceId(deviceId),
             };
 
-            _oauth = new Oauth
+            _oAuth = new OAuth
             {
                 ["grant_type"] = "refresh_token",
                 ["refresh_token"] = refreshToken
             };
 
-            Connect();
+            Connect(_oAuth);
         }
 
         /// <summary>
         /// Connects and retrieve the auth token, which is required for future operations
         /// </summary>
-        private void Connect()
+        private void Connect(OAuth oAuthToken)
         {
             Trace.TraceInformation($"Connecting device ID \"{_userInfo.DeviceId}\"");
 
@@ -103,12 +104,12 @@ namespace GreyMan.JlrSharp
             // Authenticate
             RestRequest loginRequest = new RestRequest("tokens", Method.POST, DataFormat.Json);
             loginRequest.AddHeader("Authorization", "Basic YXM6YXNwYXNz");
-            loginRequest.AddJsonBody(_oauth);
+            loginRequest.AddJsonBody(oAuthToken);
             IRestResponse<TokenStore> response = _authClient.Execute<TokenStore>(loginRequest);
 
             if (!response.IsSuccessful)
             {
-                throw new InvalidOperationException("Error authenticating");
+                throw new AuthenticationException("Error authenticating with OAuth Token");
             }
 
             _tokens = response.Data;
@@ -229,14 +230,54 @@ namespace GreyMan.JlrSharp
 
             foreach (Vehicle vehicle in _vehicles.Vehicles)
             {
-                vehicle.SetVehicleRequestClient(_vehicleClient);
+                vehicle.SetVehicleRequestClient(_vehicleClient, this);
             }
         }
 
-        // This should override the oauth token using the refresh token?
-        private void RefreshToken()
+        /// <summary>
+        /// Updates the tokens if required
+        /// </summary>
+        /// <returns>Returns true if the tokens were refreshed</returns>
+        public bool UpdateIfRequired(bool performRefresh)
         {
-            throw new NotImplementedException();
+            // If the token has more than 15 mins remaining, it's fine
+            if (_tokens.ExpirationTime >= DateTime.Now.AddMinutes(15))
+            {
+                return false;
+            }
+
+            if (!performRefresh)
+            {
+                return false; 
+            }
+
+            // Try to refresh the token using refresh token or username and password
+            try
+            {
+                Connect(_oAuth); // The last _oAuth token should be a refresh token
+            }
+            catch (AuthenticationException)
+            {
+                Trace.TraceWarning("Re-authentication failed. Attempting username and password authentication");
+                try
+                {
+                    OAuth userNamePassword = new OAuth
+                    {
+                        ["grant_type"] = "password",
+                        ["username"] = _userInfo.Email,
+                        ["password"] = _userInfo.Password,
+                    };
+
+                    Connect(userNamePassword);
+                }
+                catch
+                {
+                    Trace.TraceError("Fatal re-authentication error with username password");
+                    throw;
+                }
+            }
+
+            return true;
         }
     }
 }
