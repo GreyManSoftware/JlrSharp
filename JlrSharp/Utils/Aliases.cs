@@ -7,7 +7,7 @@ namespace GreyMan.JlrSharp.Utils
     /// <summary>
     /// A wrapper for the OAuth token
     /// </summary>
-    public class Oauth : Dictionary<string, string>
+    public class OAuth : Dictionary<string, string>
     {
     }
 
