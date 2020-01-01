@@ -1,0 +1,27 @@
+﻿@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Login page";
+}
+
+<!-- Bootstrap core CSS -->
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+<!-- Custom styles for this template -->
+<link href="~/css/signin.css" rel="stylesheet">
+
+
+<div class="text-center">
+    <form class="form-signin" method="post">
+        <img class="mb-4" src="https://getbootstrap.com/docs/4.0/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
+        <h1 class="h3 mb-3 font-weight-normal">Login to your Jaguar Remote account</h1>
+        <label for="inputEmail" class="sr-only">Email address</label>
+        <input type="email" name="inputEmail" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" name="inputPassword" id="inputPassword" class="form-control" placeholder="Password" required>
+        <label for="inputPin" class="sr-only">Pin</label>
+        <input type="number" name="inputPin" id="inputPin" class="form-control" placeholder="Pin (Required for most functions)" required>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        <p class="mt-5 mb-3 text-muted">&copy; 2017-2018</p>
+    </form>
+</div>

@@ -86,6 +86,44 @@ namespace GreyMan.JlrSharp
             Connect(_oAuth);
         }
 
+        public JlrSharpConnection(string email, UserDetails userDetails, TokenStore tokenStore)
+        {
+            _userInfo = userDetails;
+            _tokens = tokenStore;
+
+            // We will need this token later on for re-generating the tokens
+            _oAuth = new OAuth
+            {
+                ["grant_type"] = "refresh_token",
+                ["refresh_token"] = tokenStore.refresh_token
+            };
+
+            ConnectWithExistingCreds();
+        }
+
+        /// <summary>
+        /// Sets up a connection using already generated credentials
+        /// </summary>
+        public void ConnectWithExistingCreds()
+        {
+            Trace.TraceInformation($"Connecting device ID \"{_userInfo.DeviceId}\"");
+
+            // Add some default headers
+            _authClient.AddDefaultHeader("X-Device-Id", _userInfo.DeviceId.ToString());
+            _authClient.AddDefaultHeader("Connection", "close");
+            _deviceClient.AddDefaultHeader("X-Device-Id", _userInfo.DeviceId.ToString());
+            _deviceClient.AddDefaultHeader("Connection", "close");
+            _vehicleClient.AddDefaultHeader("X-Device-Id", _userInfo.DeviceId.ToString());
+            _vehicleClient.AddDefaultHeader("Connection", "close");
+
+            // Configure the access tokens for connections
+            _deviceClient.AddDefaultHeader("Authorization", $"Bearer {_tokens.access_token}");
+            _vehicleClient.AddDefaultHeader("Authorization", $"Bearer {_tokens.access_token}");
+
+            // Grab all associated vehicles
+            GetVehicles();
+        }
+
         /// <summary>
         /// Connects and retrieve the auth token, which is required for future operations
         /// </summary>
@@ -129,9 +167,9 @@ namespace GreyMan.JlrSharp
             // Grab all associated vehicles
             GetVehicles();
 
-#if DEBUG
-            DumpData();
-#endif
+//#if DEBUG
+//            DumpData();
+//#endif
         }
 
         /// <summary>
@@ -159,6 +197,24 @@ namespace GreyMan.JlrSharp
             File.WriteAllText(Path.Combine(dataDir, "userInfo.json"), JsonSerializer.Serialize(_userInfo, options));
             File.WriteAllText(Path.Combine(dataDir, "tokens.json"), JsonSerializer.Serialize(_tokens, options));
             File.WriteAllText(Path.Combine(dataDir, "vehicles.json"), JsonSerializer.Serialize(_vehicles, options));
+        }
+
+        /// <summary>
+        /// Returns the successfully logged in user information
+        /// </summary>
+        /// <returns></returns>
+        public UserDetails GetAuthenticatedUserDetails()
+        {
+            return _userInfo;
+        }
+
+        /// <summary>
+        /// Returns the successfully logged in user authentication tokens
+        /// </summary>
+        /// <returns></returns>
+        public TokenStore GetAuthenticationTokens()
+        {
+            return _tokens;
         }
 
         /// <summary>
