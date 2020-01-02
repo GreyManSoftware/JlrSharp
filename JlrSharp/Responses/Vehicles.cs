@@ -25,6 +25,7 @@ namespace GreyMan.JlrSharp.Responses
         public string vin { get; set; }
         public string role { get; set; }
         public VehicleStatusReport VehicleStatus { get; private set; }
+        public bool AutoRefreshTokens { get; set; }
 
         /// <summary>
         /// Starts the engine
@@ -154,13 +155,13 @@ namespace GreyMan.JlrSharp.Responses
         }
 
         /// <summary>
-        /// Retrieves remaining distance until empty
+        /// Retrieves remaining miles until empty
         /// </summary>
         /// <returns></returns>
         public int GetDistanceUntilEmpty()
         {
-            VehicleStatusReport.VehicleStatus odometerReading = VehicleStatus.vehicleStatus.First(status => status.key == "DISTANCE_TO_EMPTY_FUEL");
-            return Convert.ToInt32(odometerReading.value); 
+            VehicleStatusReport.VehicleStatus remainingFuel = VehicleStatus.vehicleStatus.First(status => status.key == "DISTANCE_TO_EMPTY_FUEL");
+            return Convert.ToInt32(Convert.ToDouble(remainingFuel.value) / 1.609);
         }
 
         /// <summary>
@@ -325,7 +326,7 @@ namespace GreyMan.JlrSharp.Responses
         /// <returns>Completed rest request</returns>
         private IRestResponse GetRequest(string url, HttpHeaders httpHeaders)
         {
-            JlrSharpConnector.UpdateIfRequired(true);
+            JlrSharpConnector.UpdateIfRequired(AutoRefreshTokens);
             RestRequest restRequest = new RestRequest(url, Method.GET, DataFormat.Json);
             UpdateRestRequestHeaders(restRequest, httpHeaders);
             return VehicleRequestClient.Execute(restRequest);
@@ -338,7 +339,7 @@ namespace GreyMan.JlrSharp.Responses
         /// <returns>Completed rest request</returns>
         private IRestResponse<T> GetRequest<T>(string url, HttpHeaders httpHeaders) where T : new()
         {
-            JlrSharpConnector.UpdateIfRequired(true);
+            JlrSharpConnector.UpdateIfRequired(AutoRefreshTokens);
             RestRequest restRequest = new RestRequest(url, Method.GET, DataFormat.Json);
             UpdateRestRequestHeaders(restRequest, httpHeaders);
             return VehicleRequestClient.Execute<T>(restRequest);
@@ -351,7 +352,7 @@ namespace GreyMan.JlrSharp.Responses
         /// <returns>Completed rest request</returns>
         private IRestResponse PostRequest(string url, HttpHeaders httpHeaders, object payloadData)
         {
-            JlrSharpConnector.UpdateIfRequired(true);
+            JlrSharpConnector.UpdateIfRequired(AutoRefreshTokens);
             RestRequest restRequest = new RestRequest(url, Method.POST);
             UpdateRestRequestHeaders(restRequest, httpHeaders);
             restRequest.AddJsonBody(payloadData);
@@ -365,7 +366,7 @@ namespace GreyMan.JlrSharp.Responses
         /// <returns>Completed rest request</returns>
         private IRestResponse<T> PostRequest<T>(string url, HttpHeaders httpHeaders, object payloadData) where T : new()
         {
-            JlrSharpConnector.UpdateIfRequired(true);
+            JlrSharpConnector.UpdateIfRequired(AutoRefreshTokens);
             RestRequest restRequest = new RestRequest(url, Method.POST);
             UpdateRestRequestHeaders(restRequest, httpHeaders);
             restRequest.AddJsonBody(payloadData);

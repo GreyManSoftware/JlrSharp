@@ -45,7 +45,9 @@ namespace JlrSharpApi
                 // Determine if user already exists - they shouldn't, as you should only get here when linking for the first time
                 if (SqlQueries.GetAuthorisedUserByEmail(userDetails.Email) != null)
                 {
-                    log.LogWarning($"User \"{userDetails.Email}\" already exists!");
+                    log.LogWarning($"Deleting old user \"{userDetails.Email}\"");
+                    // Delete old user
+                    SqlQueries.DeleteUserByEmail(authorisedUser.UserInfo.Email);
                 }
 
                 // Add our new user to the database

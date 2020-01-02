@@ -136,7 +136,7 @@ namespace JlrSharpApi
         /// <returns></returns>
         public static bool DeleteUserByEmail(string emailAddress)
         {
-            string deleteUserQuery = $"DELETE FROM JlrUsers WHERE EmailAddress=\"{emailAddress}\"";
+            string deleteUserQuery = $"DELETE FROM JlrUsers WHERE EmailAddress=\'{emailAddress}\'";
             using (SqlCommand deleteUserCmd = new SqlCommand(deleteUserQuery, Sql))
             {
                 return deleteUserCmd.ExecuteNonQuery() > 0;

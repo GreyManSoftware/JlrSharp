@@ -38,6 +38,11 @@ namespace GreyMan.JlrSharp
         private VehicleCollection _vehicles;
 
         /// <summary>
+        /// Allows you to specify if the API should handle refreshing tokens
+        /// </summary>
+        public bool AutoRefreshTokens { get; set; }
+
+        /// <summary>
         /// Constructs a JlrSharp object using the specified credentials
         /// </summary>
         /// <param name="email">Your email address</param>
@@ -278,6 +283,7 @@ namespace GreyMan.JlrSharp
             foreach (Vehicle vehicle in _vehicles.Vehicles)
             {
                 vehicle.SetVehicleRequestClient(_vehicleClient, this);
+                vehicle.AutoRefreshTokens = AutoRefreshTokens;
             }
         }
 

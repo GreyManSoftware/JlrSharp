@@ -33,15 +33,29 @@ namespace JlrSharpApi
 
             // Validate skill request
             bool isValid = await skillRequest.ValidateRequestAsync(req, log);
+            if (!isValid)
+            {
+                return new BadRequestResult();
+            }
 
             Type requestType = skillRequest.GetRequestType();
             SkillResponse response = null;
 
+            // Handle open requests
             if (requestType == typeof(LaunchRequest))
             {
                 response = ResponseBuilder.Tell("Welcome to Jaguar Remote!");
                 response.Response.ShouldEndSession = false;
             }
+
+            // Handle exit requests
+            else if (requestType == typeof(SessionEndedRequest))
+            {
+                response = ResponseBuilder.Tell("Good bye");
+                response.Response.ShouldEndSession = true;
+            }
+
+            // Handle intent requests
             else if (skillRequest.Request is IntentRequest intentRequest)
             {
                 // Grab the authenticated user from the database
@@ -64,45 +78,41 @@ namespace JlrSharpApi
                             response.Response.ShouldEndSession = true;
                             break;
                         case "Unlock":
-                            //vehicle.Unlock(authorisedUser.UserInfo.Pin);
+                            vehicle.Unlock(authorisedUser.UserInfo.Pin);
                             response = ResponseBuilder.Tell("Unlocking the doors for 30 seconds");
                             break;
                         case "Lock":
-                            //vehicle.Lock(authorisedUser.UserInfo.Pin);
+                            vehicle.Lock(authorisedUser.UserInfo.Pin);
                             response = ResponseBuilder.Tell("Locking the doors");
                             break;
                         case "StartEngine":
-                            //vehicle.StartEngine(authorisedUser.UserInfo.Pin);
+                            vehicle.StartEngine(authorisedUser.UserInfo.Pin);
                             response = ResponseBuilder.Tell("Starting the engine");
                             break;
                         case "StopEngine":
-                            //vehicle.StopEngine(authorisedUser.UserInfo.Pin);
+                            vehicle.StopEngine(authorisedUser.UserInfo.Pin);
                             response = ResponseBuilder.Tell("Stopping the engine");
                             break;
                         case "ServiceDue":
-                            //int milesUntilService = vehicle.GetServiceDueInMiles();
-                            int milesUntilService = 3000;
+                            int milesUntilService = vehicle.GetServiceDueInMiles();
                             response = ResponseBuilder.Tell(
                                 $"There are {milesUntilService} miles until the next service is due");
                             break;
                         case "Mileage":
-                            //int mileage = vehicle.GetMileage();
-                            int mileage = 18000;
+                            int mileage = vehicle.GetMileage();
                             response = ResponseBuilder.Tell($"The current mileage is {mileage}");
                             break;
                         case "FuelRange":
-                            //int distanceRemaining = vehicle.GetDistanceUntilEmpty();
-                            int distanceRemaining = 100;
+                            int distanceRemaining = vehicle.GetDistanceUntilEmpty();
                             response = ResponseBuilder.Tell(
                                 $"There is {distanceRemaining} miles remaining until the fuel tank is empty");
                             break;
                         case "FuelPerc":
-                            //int fuelPerc = vehicle.GetFuelLevelPercentage();
-                            int fuelPerc = 40;
+                            int fuelPerc = vehicle.GetFuelLevelPercentage();
                             response = ResponseBuilder.Tell($"The fuel tank has {fuelPerc} percent remaining");
                             break;
                         case "HonkBeep":
-                            //vehicle.HonkAndBlink();
+                            vehicle.HonkAndBlink();
                             response = ResponseBuilder.Tell("Beeping and flashing the lights");
                             break;
                         case "AMAZON.HelpIntent":
