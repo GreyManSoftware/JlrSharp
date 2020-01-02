@@ -14,6 +14,10 @@ namespace GreyMan.JlrSharp.Responses
         {
             public string key { get; set; }
             public object value { get; set; }
+            public override string ToString()
+            {
+                return key;
+            }
         }
 
         public class VehicleAlert

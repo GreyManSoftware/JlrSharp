@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Security.Authentication;
@@ -19,15 +20,6 @@ namespace JlrSharpApi
 {
     public static class Authentication
     {
-        public static Dictionary<string, AuthenticatedUsers> UserInfoByEmail =
-            new Dictionary<string, AuthenticatedUsers>();
-
-        public static Dictionary<string, AuthenticatedUsers> UserInfoByAuthToken =
-            new Dictionary<string, AuthenticatedUsers>();
-
-        public static Dictionary<string, AuthenticatedUsers> UserInfoByAccessToken =
-            new Dictionary<string, AuthenticatedUsers>();
-
         [FunctionName("Login")]
         public static async Task<IActionResult> Login(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
@@ -41,65 +33,112 @@ namespace JlrSharpApi
 
             try
             {
+                // Log in to the API
                 JlrSharpConnection jlrSharp = new JlrSharpConnection(loginDetails.EmailAddress, loginDetails.Password);
 
                 // Grab successfully authenticated user details and store it (this should be SQL'd up)
-                UserDetails userDetails = jlrSharp.GetAuthenticatedUserDetails();
+                AuthorisedUser authorisedUser = jlrSharp.GetAuthorisedUser();
+                UserDetails userDetails = authorisedUser.UserInfo;
                 userDetails.Pin = loginDetails.PinCode;
-                TokenStore tokenStore = jlrSharp.GetAuthenticationTokens();
-                UserInfoByEmail[userDetails.Email] = new AuthenticatedUsers(userDetails, tokenStore);
-                UserInfoByAuthToken[tokenStore.authorization_token] = UserInfoByEmail[userDetails.Email];
-                UserInfoByAccessToken[tokenStore.access_token] = UserInfoByEmail[userDetails.Email];
+                TokenStore tokenStore = authorisedUser.TokenData; ;
 
+                // Determine if user already exists - they shouldn't, as you should only get here when linking for the first time
+                if (SqlQueries.GetAuthorisedUserByEmail(userDetails.Email) != null)
+                {
+                    log.LogWarning($"User \"{userDetails.Email}\" already exists!");
+                }
+
+                // Add our new user to the database
+                if (SqlQueries.InsertNewUser(userDetails, tokenStore))
+                {
+                    log.LogInformation($"Successfully added user into database for \"{userDetails.Email}\"");
+                }
+
+                // Return the authorization_token for the first part of the OAuth2 set-up
                 return new OkObjectResult(new Dictionary<string, string>
-                { ["authorization_token"] = HttpUtility.UrlEncode(tokenStore.authorization_token) });
+                    {["authorization_token"] = HttpUtility.UrlEncode(tokenStore.authorization_token)});
             }
             catch (AuthenticationException e)
             {
-                return new BadRequestObjectResult("Email address or password not recognised");
+                return new BadRequestObjectResult("Incorrect email address and/or password");
             }
         }
 
+        /// <summary>
+        /// Deals with returning or refreshing access token
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
         [FunctionName("RequestAccessToken")]
         public static async Task<IActionResult> RequestAccessToken(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
             HttpRequest req,
             ILogger log)
         {
-            log.LogInformation("Processing access token request");
-
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             Dictionary<string, string> queryParams = ParseQueryToDictionary(requestBody);
 
             // Determine if this is a new key request
             if (queryParams.ContainsKey("grant_type") && queryParams["grant_type"] == "authorization_code")
             {
-                if (queryParams.ContainsKey("code"))
+                log.LogInformation("Processing access token request");
+
+                string authorisationToken = HttpUtility.UrlDecode(queryParams["code"]); // The auth code is Base64 and so is UrlEncoded
+                AuthorisedUser authorisedUser = SqlQueries.GetAuthorisedUserByAuthorisationToken(authorisationToken);
+
+                if (authorisedUser == null)
                 {
-                    string authCode = HttpUtility.UrlDecode(queryParams["code"]);
-                    AuthenticatedUsers accessDetails = UserInfoByAuthToken[authCode];
-
-                    // Create bespoke Alexa response (not sure if this is actually required)
-                    Dictionary<string, string> alexaResponse = new Dictionary<string, string>
-                    {
-                        ["access_token"] = accessDetails.TokenStore.access_token,
-                        ["token_type"] = accessDetails.TokenStore.token_type,
-                        ["expires_in"] = accessDetails.TokenStore.expires_in,
-                        ["refresh_token"] = accessDetails.TokenStore.refresh_token,
-                    };
-
-                    return new OkObjectResult(alexaResponse);
+                    return new BadRequestObjectResult("User could not be identified by authorisation code");
                 }
+
+                // Create bespoke Alexa response (not sure if we could just return everything)
+                Dictionary<string, string> alexaResponse = new Dictionary<string, string>
+                {
+                    ["access_token"] = authorisedUser.TokenData.access_token,
+                    ["token_type"] = authorisedUser.TokenData.token_type,
+                    ["expires_in"] = authorisedUser.TokenData.expires_in,
+                    ["refresh_token"] = authorisedUser.TokenData.refresh_token
+                };
+
+                return new OkObjectResult(alexaResponse);
             }
 
-            try
+            // Deal with re-generating the access token
+            if (queryParams.ContainsKey("refresh_token"))
             {
-                return new OkObjectResult("data");
+                string refreshToken = queryParams["refresh_token"];
+                AuthorisedUser authorisedUser = SqlQueries.GetAuthorisedUserByRefreshToken(refreshToken);
+
+                if (authorisedUser == null)
+                {
+                    return new BadRequestObjectResult("User could not be identified by refresh token");
+                }
+
+                // This c'tor causes the tokens to be refreshed
+                JlrSharpConnection jlrSharpConnection = new JlrSharpConnection(authorisedUser.UserInfo.Email,
+                    refreshToken, authorisedUser.UserInfo.DeviceId.ToString());
+
+                // Delete old user
+                SqlQueries.DeleteUserByEmail(authorisedUser.UserInfo.Email);
+
+                // Insert user with updated details
+                authorisedUser = jlrSharpConnection.GetAuthorisedUser();
+                SqlQueries.InsertNewUser(authorisedUser.UserInfo, authorisedUser.TokenData);
+
+                // Create bespoke Alexa response (not sure if we could just return everything)
+                Dictionary<string, string> alexaResponse = new Dictionary<string, string>
+                {
+                    ["access_token"] = authorisedUser.TokenData.access_token,
+                    ["token_type"] = authorisedUser.TokenData.token_type,
+                    ["expires_in"] = authorisedUser.TokenData.expires_in,
+                    ["refresh_token"] = authorisedUser.TokenData.refresh_token
+                };
+
+                return new OkObjectResult(alexaResponse);
             }
-            catch (AuthenticationException e)
-            {
-                return new BadRequestObjectResult("Email address or password not recognised");
-            }
+            
+            return new BadRequestObjectResult("A fatal error occured generating the access token");
         }
 
         /// <summary>
@@ -120,7 +159,7 @@ namespace JlrSharpApi
             for (int x = 0; x < queryParams.Length; x++)
             {
                 string[] keyValues = queryParams[x].Split('=');
-                
+
                 if (keyValues.Length != 2)
                 {
                     throw new ArgumentException("Query parameter values are invalid");
@@ -139,18 +178,5 @@ namespace JlrSharpApi
         public string EmailAddress { get; set; }
         public string Password { get; set; }
         public string PinCode { get; set; }
-    }
-
-    [Serializable]
-    public class AuthenticatedUsers
-    {
-        public UserDetails UserDetails { get; set; }
-        public TokenStore TokenStore { get; set; }
-
-        public AuthenticatedUsers(UserDetails userDetails, TokenStore tokenStore)
-        {
-            UserDetails = userDetails;
-            TokenStore = tokenStore;
-        }
     }
 }

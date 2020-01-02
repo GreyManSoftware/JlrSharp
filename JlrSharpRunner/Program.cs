@@ -20,13 +20,13 @@ namespace JlrSharpRunner
 
             // Basic functionality
             //VehicleHealthReport healthReport = defaultVehicle.GetVehicleHealth();
-            //int milesRemainingUntilService = defaultVehicle.GetNextServiceDue();
+            int milesRemainingUntilService = defaultVehicle.GetServiceDueInMiles();
             //defaultVehicle.HonkAndBlink();
             //Task.Delay(5000).Wait();
-            defaultVehicle.Unlock(myPin);
-            Task.Delay(5000).Wait();
-            defaultVehicle.Lock(myPin);
-            Task.Delay(5000).Wait();
+            //defaultVehicle.Unlock(myPin);
+            //Task.Delay(5000).Wait();
+            //defaultVehicle.Lock(myPin);
+            //Task.Delay(5000).Wait();
             //defaultVehicle.StartEngine(myPin);
             //Task.Delay(5000).Wait();
             //defaultVehicle.StopEngine(myPin);

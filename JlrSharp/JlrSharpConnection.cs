@@ -86,7 +86,7 @@ namespace GreyMan.JlrSharp
             Connect(_oAuth);
         }
 
-        public JlrSharpConnection(string email, UserDetails userDetails, TokenStore tokenStore)
+        public JlrSharpConnection(UserDetails userDetails, TokenStore tokenStore)
         {
             _userInfo = userDetails;
             _tokens = tokenStore;
@@ -200,21 +200,12 @@ namespace GreyMan.JlrSharp
         }
 
         /// <summary>
-        /// Returns the successfully logged in user information
+        /// Returns the credentials of the currently authorised user
         /// </summary>
         /// <returns></returns>
-        public UserDetails GetAuthenticatedUserDetails()
+        public AuthorisedUser GetAuthorisedUser()
         {
-            return _userInfo;
-        }
-
-        /// <summary>
-        /// Returns the successfully logged in user authentication tokens
-        /// </summary>
-        /// <returns></returns>
-        public TokenStore GetAuthenticationTokens()
-        {
-            return _tokens;
+            return new AuthorisedUser {UserInfo = _userInfo, TokenData = _tokens};
         }
 
         /// <summary>

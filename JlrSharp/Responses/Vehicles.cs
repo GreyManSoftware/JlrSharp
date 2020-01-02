@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using GreyMan.JlrSharp.Requests;
 using GreyMan.JlrSharp.Utils;
+using Newtonsoft.Json;
 using RestSharp;
-using RestSharp.Deserializers;
 
 namespace GreyMan.JlrSharp.Responses
 {
@@ -129,7 +128,16 @@ namespace GreyMan.JlrSharp.Responses
         /// <summary>
         /// Retrieves the next service due in miles
         /// </summary>
-        public int GetNextServiceDue()
+        public int GetServiceDueInMiles()
+        {
+            VehicleStatusReport.VehicleStatus odometerReading = VehicleStatus.vehicleStatus.First(status => status.key == "EXT_KILOMETERS_TO_SERVICE");
+            return Convert.ToInt32(Convert.ToDouble(odometerReading.value) / 1.609);
+        }
+
+        /// <summary>
+        /// Gets the current mileage of the vehicle
+        /// </summary>
+        public int GetMileage()
         {
             VehicleStatusReport.VehicleStatus odometerReading = VehicleStatus.vehicleStatus.First(status => status.key == "ODOMETER_MILES");
             return Convert.ToInt32(odometerReading.value);
@@ -143,6 +151,16 @@ namespace GreyMan.JlrSharp.Responses
         {
             VehicleStatusReport.VehicleStatus odometerReading = VehicleStatus.vehicleStatus.First(status => status.key == "FUEL_LEVEL_PERC");
             return Convert.ToInt32(odometerReading.value);
+        }
+
+        /// <summary>
+        /// Retrieves remaining distance until empty
+        /// </summary>
+        /// <returns></returns>
+        public int GetDistanceUntilEmpty()
+        {
+            VehicleStatusReport.VehicleStatus odometerReading = VehicleStatus.vehicleStatus.First(status => status.key == "DISTANCE_TO_EMPTY_FUEL");
+            return Convert.ToInt32(odometerReading.value); 
         }
 
         /// <summary>
@@ -223,7 +241,7 @@ namespace GreyMan.JlrSharp.Responses
                 throw new InvalidOperationException("Error retrieving vehicle health status");
             }
 
-            return JsonSerializer.Deserialize<VehicleHealthReport>(healthResponse.Content);
+            return JsonConvert.DeserializeObject<VehicleHealthReport>(healthResponse.Content);
         }
 
         /// <summary>
@@ -240,7 +258,7 @@ namespace GreyMan.JlrSharp.Responses
         }
 
         /// <summary>
-        /// Retrieves the next service due in miles
+        /// Populates the vehicle status report
         /// </summary>
         public void RefreshVehicleStatusReport()
         {
@@ -272,7 +290,7 @@ namespace GreyMan.JlrSharp.Responses
                 throw new InvalidOperationException($"Error generating {serviceName} token");
             }
 
-            return JsonSerializer.Deserialize<ApiResponse>(tokenResponse.Content);
+            return JsonConvert.DeserializeObject<ApiResponse>(tokenResponse.Content);
         }
 
         /// <summary>
