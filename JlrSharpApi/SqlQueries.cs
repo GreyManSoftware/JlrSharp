@@ -65,36 +65,37 @@ namespace JlrSharpApi
         {
             using (SqlCommand findUserCmd = new SqlCommand(query, Sql))
             {
-                SqlDataReader reader = findUserCmd.ExecuteReader();
-                
-                // The query returned no rows
-                if (!reader.HasRows)
+                using (SqlDataReader reader = findUserCmd.ExecuteReader())
                 {
-                    return null;
-                }
-
-                reader.Read(); // We only expect a single result
-
-                // Create bespoke Alexa response (not sure if we could just return everything)
-                return new AuthorisedUser
-                {
-                    UserInfo = new UserDetails
+                    // The query returned no rows
+                    if (!reader.HasRows)
                     {
-                        Email = reader["EmailAddress"].ToString(),
-                        Pin = reader["PinCode"].ToString(),
-                        UserId = reader["UserId"].ToString(),
-                        DeviceId = Guid.Parse(reader["DeviceId"].ToString()),
-                        DeviceIdExpiry = DateTime.Parse(reader["DeviceIdExpiry"].ToString())
-                    },
-                    TokenData = new TokenStore
-                    {
-                        access_token = reader["access_token"].ToString(),
-                        token_type = reader["token_type"].ToString(),
-                        expires_in = reader["expires_in"].ToString(),
-                        refresh_token = reader["refresh_token"].ToString(),
-                        CreatedDate = DateTime.Parse(reader["CreatedDate"].ToString())
+                        return null;
                     }
-                };
+
+                    reader.Read(); // We only expect a single result
+
+                    // Create bespoke Alexa response (not sure if we could just return everything)
+                    return new AuthorisedUser
+                    {
+                        UserInfo = new UserDetails
+                        {
+                            Email = reader["EmailAddress"].ToString(),
+                            Pin = reader["PinCode"].ToString(),
+                            UserId = reader["UserId"].ToString(),
+                            DeviceId = Guid.Parse(reader["DeviceId"].ToString()),
+                            DeviceIdExpiry = DateTime.Parse(reader["DeviceIdExpiry"].ToString())
+                        },
+                        TokenData = new TokenStore
+                        {
+                            access_token = reader["access_token"].ToString(),
+                            token_type = reader["token_type"].ToString(),
+                            expires_in = reader["expires_in"].ToString(),
+                            refresh_token = reader["refresh_token"].ToString(),
+                            CreatedDate = DateTime.Parse(reader["CreatedDate"].ToString())
+                        }
+                    };
+                }
             }
         }
 

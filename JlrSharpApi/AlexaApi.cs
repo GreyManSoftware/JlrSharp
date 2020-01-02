@@ -8,6 +8,7 @@ using Alexa.NET;
 using Alexa.NET.Request;
 using Alexa.NET.Request.Type;
 using Alexa.NET.Response;
+using Alexa.NET.Security.Functions;
 using GreyMan.JlrSharp;
 using GreyMan.JlrSharp.Responses;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +30,10 @@ namespace JlrSharpApi
         {
             string json = await req.ReadAsStringAsync();
             SkillRequest skillRequest = JsonConvert.DeserializeObject<SkillRequest>(json);
+
+            // Validate skill request
+            bool isValid = await skillRequest.ValidateRequestAsync(req, log);
+
             Type requestType = skillRequest.GetRequestType();
             SkillResponse response = null;
 
@@ -48,44 +53,81 @@ namespace JlrSharpApi
 
                 Vehicle vehicle = jlrSharpConnection.GetPrimaryVehicle();
                 log.LogInformation($"Using default vehicle with vin \"{vehicle.vin}\"");
-                
-                switch (intentRequest.Intent.Name)
+
+                try
                 {
-                    case "Unlock":
-                        vehicle.Unlock(authorisedUser.UserInfo.Pin);
-                        response = ResponseBuilder.Tell("The doors have been unlocked for 30 seconds");
-                        break;
-                    case "Lock":
-                        vehicle.Lock(authorisedUser.UserInfo.Pin);
-                        response = ResponseBuilder.Tell("The doors have been locked");
-                        break;
-                    case "StartEngine":
-                        vehicle.StartEngine(authorisedUser.UserInfo.Pin);
-                        response = ResponseBuilder.Tell("The engine has been started");
-                        break;
-                    case "StopEngine":
-                        vehicle.StopEngine(authorisedUser.UserInfo.Pin);
-                        response = ResponseBuilder.Tell("The engine has stopped");
-                        break;
-                    case "ServiceDue":
-                        int milesUntilService = vehicle.GetServiceDueInMiles();
-                        response = ResponseBuilder.Tell($"There are {milesUntilService} miles until the next service is due");
-                        break;
-                    case "Mileage":
-                        int mileage = vehicle.GetMileage();
-                        response = ResponseBuilder.Tell($"The current mileage is {mileage}");
-                        break;
-                    case "FuelRange":
-                        int distanceRemaining = vehicle.GetDistanceUntilEmpty();
-                        response = ResponseBuilder.Tell($"There is {distanceRemaining} miles remaining until the fuel tank is empty");
-                        break;
-                    case "FuelPerc":
-                        int fuelPerc = vehicle.GetFuelLevelPercentage();
-                        response = ResponseBuilder.Tell($"The fuel tank is at {fuelPerc} percent full");
-                        break;
+                    switch (intentRequest.Intent.Name)
+                    {
+                        case "AMAZON.CancelIntent":
+                        case "AMAZON.StopIntent":
+                            response = ResponseBuilder.Tell("Your action has been cancelled");
+                            response.Response.ShouldEndSession = true;
+                            break;
+                        case "Unlock":
+                            //vehicle.Unlock(authorisedUser.UserInfo.Pin);
+                            response = ResponseBuilder.Tell("Unlocking the doors for 30 seconds");
+                            break;
+                        case "Lock":
+                            //vehicle.Lock(authorisedUser.UserInfo.Pin);
+                            response = ResponseBuilder.Tell("Locking the doors");
+                            break;
+                        case "StartEngine":
+                            //vehicle.StartEngine(authorisedUser.UserInfo.Pin);
+                            response = ResponseBuilder.Tell("Starting the engine");
+                            break;
+                        case "StopEngine":
+                            //vehicle.StopEngine(authorisedUser.UserInfo.Pin);
+                            response = ResponseBuilder.Tell("Stopping the engine");
+                            break;
+                        case "ServiceDue":
+                            //int milesUntilService = vehicle.GetServiceDueInMiles();
+                            int milesUntilService = 3000;
+                            response = ResponseBuilder.Tell(
+                                $"There are {milesUntilService} miles until the next service is due");
+                            break;
+                        case "Mileage":
+                            //int mileage = vehicle.GetMileage();
+                            int mileage = 18000;
+                            response = ResponseBuilder.Tell($"The current mileage is {mileage}");
+                            break;
+                        case "FuelRange":
+                            //int distanceRemaining = vehicle.GetDistanceUntilEmpty();
+                            int distanceRemaining = 100;
+                            response = ResponseBuilder.Tell(
+                                $"There is {distanceRemaining} miles remaining until the fuel tank is empty");
+                            break;
+                        case "FuelPerc":
+                            //int fuelPerc = vehicle.GetFuelLevelPercentage();
+                            int fuelPerc = 40;
+                            response = ResponseBuilder.Tell($"The fuel tank has {fuelPerc} percent remaining");
+                            break;
+                        case "HonkBeep":
+                            //vehicle.HonkAndBlink();
+                            response = ResponseBuilder.Tell("Beeping and flashing the lights");
+                            break;
+                        case "AMAZON.HelpIntent":
+                            response = ResponseBuilder.Tell("Try asking questions like, how much fuel remains?");
+                            response.Response.ShouldEndSession = false;
+                            break;
+                        default:
+                            response = ResponseBuilder.Tell("Try asking how much fuel remains by saying, how much fuel remains?");
+                            response.Response.ShouldEndSession = false;
+                            break;
+                    }
+                }
+                catch
+                {
+                    response = ResponseBuilder.Tell("There was an error with your request, please try again later");
                 }
             }
 
+            // If response is null, it means we haven't correctly handled it
+            if (response == null)
+            {
+                return new BadRequestResult();
+            }
+
+            // This is the valid response
             return new OkObjectResult(response);
         }
     }
