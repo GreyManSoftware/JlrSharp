@@ -108,9 +108,7 @@ namespace JlrSharpApi
         public static bool InsertNewUser(UserDetails userDetails, TokenStore tokenStore)
         {
             // Insert the user into our database
-            string addUser = @"INSERT INTO dbo.JlrUsers 
-                                    (EmailAddress,PinCode,UserId,DeviceId,DeviceIdExpiry,access_token,authorization_token,expires_in,refresh_token,token_type,CreatedDate) 
-                                    VALUES (@EmailAddress,@PinCode,@UserId,@DeviceId,@DeviceIdExpiry,@access_token,@authorization_token,@expires_in,@refresh_token,@token_type,@CreatedDate)";
+            string addUser = @"INSERT INTO dbo.JlrUsers (EmailAddress,PinCode,UserId,DeviceId,DeviceIdExpiry,access_token,authorization_token,expires_in,refresh_token,token_type,CreatedDate) VALUES (@EmailAddress,@PinCode,@UserId,@DeviceId,@DeviceIdExpiry,@access_token,@authorization_token,@expires_in,@refresh_token,@token_type,@CreatedDate)";
 
             using (SqlCommand insertUser = new SqlCommand(addUser, Sql))
             {

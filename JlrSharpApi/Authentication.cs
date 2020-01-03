@@ -40,7 +40,7 @@ namespace JlrSharpApi
                 AuthorisedUser authorisedUser = jlrSharp.GetAuthorisedUser();
                 UserDetails userDetails = authorisedUser.UserInfo;
                 userDetails.Pin = loginDetails.PinCode;
-                TokenStore tokenStore = authorisedUser.TokenData; ;
+                TokenStore tokenStore = authorisedUser.TokenData;
 
                 // Determine if user already exists - they shouldn't, as you should only get here when linking for the first time
                 if (SqlQueries.GetAuthorisedUserByEmail(userDetails.Email) != null)
@@ -100,6 +100,7 @@ namespace JlrSharpApi
                     ["access_token"] = authorisedUser.TokenData.access_token,
                     ["token_type"] = authorisedUser.TokenData.token_type,
                     ["expires_in"] = authorisedUser.TokenData.expires_in,
+                    //["expires_in"] = "360", // useful for testing faster token expiry
                     ["refresh_token"] = authorisedUser.TokenData.refresh_token
                 };
 
@@ -111,6 +112,9 @@ namespace JlrSharpApi
             {
                 string refreshToken = queryParams["refresh_token"];
                 AuthorisedUser authorisedUser = SqlQueries.GetAuthorisedUserByRefreshToken(refreshToken);
+                
+                // Need to get this an re-insert it into the new user details
+                string pinCode = authorisedUser.UserInfo.Pin;
 
                 if (authorisedUser == null)
                 {
@@ -126,6 +130,9 @@ namespace JlrSharpApi
 
                 // Insert user with updated details
                 authorisedUser = jlrSharpConnection.GetAuthorisedUser();
+
+                // Reset the pin code in the new user details
+                authorisedUser.UserInfo.Pin = pinCode;
                 SqlQueries.InsertNewUser(authorisedUser.UserInfo, authorisedUser.TokenData);
 
                 // Create bespoke Alexa response (not sure if we could just return everything)
@@ -134,6 +141,7 @@ namespace JlrSharpApi
                     ["access_token"] = authorisedUser.TokenData.access_token,
                     ["token_type"] = authorisedUser.TokenData.token_type,
                     ["expires_in"] = authorisedUser.TokenData.expires_in,
+                    //["expires_in"] = "360", // useful for testing faster token expiry
                     ["refresh_token"] = authorisedUser.TokenData.refresh_token
                 };
 
@@ -152,11 +160,6 @@ namespace JlrSharpApi
         {
             string[] queryParams = queryString.Split('&');
             Dictionary<string, string> queryParamDictionary = new Dictionary<string, string>();
-
-            if (queryParams.Length % 2 != 0)
-            {
-                throw new ArgumentException("Query parameter string is invalid");
-            }
 
             for (int x = 0; x < queryParams.Length; x++)
             {

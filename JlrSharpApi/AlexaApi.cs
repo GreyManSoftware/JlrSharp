@@ -72,11 +72,17 @@ namespace JlrSharpApi
                 {
                     switch (intentRequest.Intent.Name)
                     {
+                        // Amazon intents
                         case "AMAZON.CancelIntent":
                         case "AMAZON.StopIntent":
                             response = ResponseBuilder.Tell("Your action has been cancelled");
                             response.Response.ShouldEndSession = true;
                             break;
+                        case "AMAZON.HelpIntent":
+                            response = ResponseBuilder.Tell("Try asking questions like, how much fuel remains?");
+                            response.Response.ShouldEndSession = false;
+                            break;
+                        // Custom intents
                         case "Unlock":
                             vehicle.Unlock(authorisedUser.UserInfo.Pin);
                             response = ResponseBuilder.Tell("Unlocking the doors for 30 seconds");
@@ -86,8 +92,26 @@ namespace JlrSharpApi
                             response = ResponseBuilder.Tell("Locking the doors");
                             break;
                         case "StartEngine":
-                            vehicle.StartEngine(authorisedUser.UserInfo.Pin);
-                            response = ResponseBuilder.Tell("Starting the engine");
+                            int climateRemainingRunTime = vehicle.GetRemainingClimateRunTime();
+                            string responseMessage = "Starting the engine";
+
+                            if (climateRemainingRunTime > 0)
+                            {
+                                if (climateRemainingRunTime > 0 && climateRemainingRunTime <= 5)
+                                {
+                                    responseMessage =
+                                        $"Starting the engine, but note you only have {climateRemainingRunTime} minutes remaining until the engine automatically stops";
+                                }
+
+                                vehicle.StartEngine(authorisedUser.UserInfo.Pin);
+                            }
+                            else
+                            {
+                                responseMessage =
+                                    $"Remote climate cannot start as you've exceeded the maximum allowed time. Please drive the car normally to reset this";
+                            }
+
+                            response = ResponseBuilder.Tell(responseMessage);
                             break;
                         case "StopEngine":
                             vehicle.StopEngine(authorisedUser.UserInfo.Pin);
@@ -114,10 +138,6 @@ namespace JlrSharpApi
                         case "HonkBeep":
                             vehicle.HonkAndBlink();
                             response = ResponseBuilder.Tell("Beeping and flashing the lights");
-                            break;
-                        case "AMAZON.HelpIntent":
-                            response = ResponseBuilder.Tell("Try asking questions like, how much fuel remains?");
-                            response.Response.ShouldEndSession = false;
                             break;
                         default:
                             response = ResponseBuilder.Tell("Try asking how much fuel remains by saying, how much fuel remains?");
