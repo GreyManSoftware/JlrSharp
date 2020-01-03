@@ -165,6 +165,27 @@ namespace GreyMan.JlrSharp.Responses
         }
 
         /// <summary>
+        /// Returns the remaining run time left for remote climate
+        /// </summary>
+        /// <returns></returns>
+        public int GetRemainingClimateRunTime()
+        {
+            VehicleStatusReport.VehicleStatus remainingRunTime = VehicleStatus.vehicleStatus.First(status => status.key == "CLIMATE_STATUS_REMAINING_RUNTIME");
+            return Convert.ToInt32(remainingRunTime.value);
+        }
+
+        /// <summary>
+        /// Returns the current state of the vehicle
+        /// </summary>
+        /// <returns></returns>
+        public string GetVehicleStateType()
+        {
+            //TODO: Need to translate these into human readable messages
+            VehicleStatusReport.VehicleStatus vehicleStateType = VehicleStatus.vehicleStatus.First(status => status.key == "VEHICLE_STATE_TYPE");
+            return vehicleStateType.ToString();
+        }
+
+        /// <summary>
         /// Honks the horn and flashes the lights
         /// </summary>
         public void HonkAndBlink()
