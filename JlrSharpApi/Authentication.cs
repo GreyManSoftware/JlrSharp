@@ -99,7 +99,7 @@ namespace JlrSharpApi
                 {
                     ["access_token"] = authorisedUser.TokenData.access_token,
                     ["token_type"] = authorisedUser.TokenData.token_type,
-                    ["expires_in"] = authorisedUser.TokenData.expires_in,
+                    ["expires_in"] = "86340", // This is one min earlier than Jaguar set to avoid race conditions
                     //["expires_in"] = "360", // useful for testing faster token expiry
                     ["refresh_token"] = authorisedUser.TokenData.refresh_token
                 };
@@ -140,7 +140,7 @@ namespace JlrSharpApi
                 {
                     ["access_token"] = authorisedUser.TokenData.access_token,
                     ["token_type"] = authorisedUser.TokenData.token_type,
-                    ["expires_in"] = authorisedUser.TokenData.expires_in,
+                    ["expires_in"] = "86340", // This is one min earlier than Jaguar set to avoid race conditions
                     //["expires_in"] = "360", // useful for testing faster token expiry
                     ["refresh_token"] = authorisedUser.TokenData.refresh_token
                 };

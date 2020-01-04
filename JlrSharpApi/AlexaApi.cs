@@ -58,18 +58,19 @@ namespace JlrSharpApi
             // Handle intent requests
             else if (skillRequest.Request is IntentRequest intentRequest)
             {
-                // Grab the authenticated user from the database
-                AuthorisedUser authorisedUser = SqlQueries.GetAuthorisedUserByAccessToken(skillRequest.Session.User.AccessToken);
-                log.LogInformation($"Grabbed logged in user \"{authorisedUser.UserInfo.Email}\"");
-
-                log.LogInformation("Connecting to Jaguar Remote");
-                JlrSharpConnection jlrSharpConnection = new JlrSharpConnection(authorisedUser.UserInfo, authorisedUser.TokenData);
-
-                Vehicle vehicle = jlrSharpConnection.GetPrimaryVehicle();
-                log.LogInformation($"Using default vehicle with vin \"{vehicle.vin}\"");
-
+                AuthorisedUser authorisedUser = null;
                 try
                 {
+                    // Grab the authenticated user from the database
+                    authorisedUser = SqlQueries.GetAuthorisedUserByAccessToken(skillRequest.Session.User.AccessToken);
+                    log.LogInformation($"Grabbed logged in user \"{authorisedUser.UserInfo.Email}\"");
+
+                    log.LogInformation("Connecting to Jaguar Remote");
+                    JlrSharpConnection jlrSharpConnection = new JlrSharpConnection(authorisedUser.UserInfo, authorisedUser.TokenData);
+
+                    Vehicle vehicle = jlrSharpConnection.GetPrimaryVehicle();
+                    log.LogInformation($"Using default vehicle with vin \"{vehicle.vin}\"");
+
                     switch (intentRequest.Intent.Name)
                     {
                         // Amazon intents
@@ -144,13 +145,21 @@ namespace JlrSharpApi
                             response.Response.ShouldEndSession = false;
                             break;
                     }
+
+                    SqlQueries.LogIntentUsage(authorisedUser.UserInfo.Email, intentRequest.Intent.Name, true);
                 }
                 catch
                 {
-                    response = ResponseBuilder.Tell("There was an error with your request, please try again later");
+                    if (authorisedUser != null)
+                    {
+                        SqlQueries.LogIntentUsage(authorisedUser.UserInfo.Email, intentRequest.Intent.Name, false);
+                    }
+
+                    response = ResponseBuilder.Tell("Please report this beta test error to Chris Davies");
+                    //response = ResponseBuilder.Tell("There was an error with your request, please try again later");
                 }
             }
-
+            
             // If response is null, it means we haven't correctly handled it
             if (response == null)
             {

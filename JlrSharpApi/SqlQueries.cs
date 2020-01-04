@@ -108,7 +108,7 @@ namespace JlrSharpApi
         public static bool InsertNewUser(UserDetails userDetails, TokenStore tokenStore)
         {
             // Insert the user into our database
-            string addUser = @"INSERT INTO dbo.JlrUsers (EmailAddress,PinCode,UserId,DeviceId,DeviceIdExpiry,access_token,authorization_token,expires_in,refresh_token,token_type,CreatedDate) VALUES (@EmailAddress,@PinCode,@UserId,@DeviceId,@DeviceIdExpiry,@access_token,@authorization_token,@expires_in,@refresh_token,@token_type,@CreatedDate)";
+            string addUser = @"INSERT INTO JlrUsers (EmailAddress,PinCode,UserId,DeviceId,DeviceIdExpiry,access_token,authorization_token,expires_in,refresh_token,token_type,CreatedDate) VALUES (@EmailAddress,@PinCode,@UserId,@DeviceId,@DeviceIdExpiry,@access_token,@authorization_token,@expires_in,@refresh_token,@token_type,@CreatedDate)";
 
             using (SqlCommand insertUser = new SqlCommand(addUser, Sql))
             {
@@ -125,6 +125,25 @@ namespace JlrSharpApi
                 insertUser.Parameters.AddWithValue("@CreatedDate", tokenStore.CreatedDate);
 
                 return insertUser.ExecuteNonQuery() > 0;
+            }
+        }
+
+        /// <summary>
+        /// Logs usage of the API
+        /// </summary>
+        public static bool LogIntentUsage(string emailAddress, string intent, bool intentExecutedSuccessfully)
+        {
+            // Log update query
+            string logIntentUsageQuery = @"INSERT INTO IntentUsageLog (EmailAddress,Intent,TimeOfRequest,IntentExecutedSuccessfully) VALUES (@EmailAddress,@Intent,@TimeOfRequest,@IntentExecutedSuccessfully)";
+            
+            using (SqlCommand logIntentCmd = new SqlCommand(logIntentUsageQuery, Sql))
+            {
+                logIntentCmd.Parameters.AddWithValue("@EmailAddress", emailAddress);
+                logIntentCmd.Parameters.AddWithValue("@Intent", intent);
+                logIntentCmd.Parameters.AddWithValue("@TimeOfRequest", DateTime.Now);
+                logIntentCmd.Parameters.AddWithValue("@IntentExecutedSuccessfully", intentExecutedSuccessfully.ToString());
+
+                return logIntentCmd.ExecuteNonQuery() > 0;
             }
         }
 
