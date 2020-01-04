@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using GreyMan.JlrSharp;
-using GreyMan.JlrSharp.Responses;
+using JlrSharp;
+using JlrSharp.Responses;
 
 namespace JlrSharpRunner
 {

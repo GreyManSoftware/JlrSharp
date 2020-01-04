@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>GreyMan.JlrSharp</RootNamespace>
+    <RootNamespace>JlrSharp</RootNamespace>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Authors>Chris Davies</Authors>
     <Company>GreyMan Software</Company>
@@ -13,10 +13,16 @@
     <PackageTags>Jaguar, Remote, InControl</PackageTags>
     <PackageReleaseNotes>This is the first release, so please report bugs via the GitHub page</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>jaguarApiLogo.PNG</PackageIcon>
+    <PackageIconUrl />
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove=".gitignore" />
+    <None Include="jaguarApiLogo.PNG">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

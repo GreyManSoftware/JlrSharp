@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace GreyMan.JlrSharp.Responses
+namespace JlrSharp.Responses
 {
     public class VehicleStatusReport
     {

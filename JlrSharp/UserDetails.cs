@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace GreyMan.JlrSharp
+namespace JlrSharp
 {
     [Serializable]
     public class UserDetails

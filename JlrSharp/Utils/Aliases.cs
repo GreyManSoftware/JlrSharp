@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace GreyMan.JlrSharp.Utils
+namespace JlrSharp.Utils
 {
     /// <summary>
     /// A wrapper for the OAuth token

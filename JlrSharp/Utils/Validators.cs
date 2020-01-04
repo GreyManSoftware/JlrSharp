@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
-namespace GreyMan.JlrSharp.Utils
+namespace JlrSharp.Utils
 {
     public static class Validators
     {

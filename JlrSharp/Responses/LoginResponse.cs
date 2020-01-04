@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using RestSharp.Deserializers;
 
-namespace GreyMan.JlrSharp.Responses
+namespace JlrSharp.Responses
 {
     [Serializable]
     public class LoginResponse
