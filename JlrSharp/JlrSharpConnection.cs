@@ -109,7 +109,7 @@ namespace JlrSharp
         /// <summary>
         /// Sets up a connection using already generated credentials
         /// </summary>
-        public void ConnectWithExistingCreds()
+        private void ConnectWithExistingCreds()
         {
             Trace.TraceInformation($"Connecting device ID \"{_userInfo.DeviceId}\"");
 
