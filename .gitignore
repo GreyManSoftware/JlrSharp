@@ -35,3 +35,5 @@ msbuild.wrn
 
 # Visual Studio 2015
 .vs/
+/JlrSharpFrontend/Properties/PublishProfiles/JlrSharpFrontend - Web Deploy.pubxml
+/JlrSharpApi/Properties/PublishProfiles/JlrSharpApi - Zip Deploy.pubxml
