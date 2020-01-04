@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using GreyMan.JlrSharp.Requests;
-using GreyMan.JlrSharp.Utils;
+using JlrSharp.Requests;
+using JlrSharp.Utils;
 using Newtonsoft.Json;
 using RestSharp;
 
-namespace GreyMan.JlrSharp.Responses
+namespace JlrSharp.Responses
 {
-
-
     public class VehicleCollection
     {
         public List<Vehicle> Vehicles { get; set; }

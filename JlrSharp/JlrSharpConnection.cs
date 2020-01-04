@@ -6,11 +6,11 @@ using System.Linq;
 using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
-using GreyMan.JlrSharp.Responses;
-using GreyMan.JlrSharp.Utils;
+using JlrSharp.Responses;
+using JlrSharp.Utils;
 using RestSharp;
 
-namespace GreyMan.JlrSharp
+namespace JlrSharp
 {
     /// <summary>
     /// The interface for the JLR InControl connectivity

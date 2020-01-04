@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace GreyMan.JlrSharp.Requests
+namespace JlrSharp.Requests
 {
     // This currently doesn't work
     [Serializable]
