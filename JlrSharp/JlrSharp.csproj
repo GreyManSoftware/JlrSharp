@@ -3,6 +3,16 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>GreyMan.JlrSharp</RootNamespace>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Authors>Chris Davies</Authors>
+    <Company>GreyMan Software</Company>
+    <Description>A C# wrapper for the Jaguar Remote (InControl) services. This allows you to sign into your account and use functions such as remote engine start, grab service information and much more!</Description>
+    <Copyright>GreyMan Software 2019</Copyright>
+    <PackageProjectUrl>https://github.com/GreyManSoftware/JlrSharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/GreyManSoftware/JlrSharp</RepositoryUrl>
+    <PackageTags>Jaguar, Remote, InControl</PackageTags>
+    <PackageReleaseNotes>This is the first release, so please report bugs via the GitHub page</PackageReleaseNotes>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="RestSharp" Version="106.6.10" />
   </ItemGroup>
 
