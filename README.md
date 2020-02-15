@@ -28,10 +28,9 @@ If you plan to use the library in a service, you may wish to use the automatic t
 JlrSharpConnection jlrSharp = new JlrSharpConnection("your@email.com", "your_password");
 jlrSharp.AutoRefreshTokens = true;
 ```
-You can only also refresh the tokens using the following c'tor
+You can only force a refresh of the tokens using this c'tor
 ```csharp
 JlrSharpConnection jlrSharp = new JlrSharpConnection("your@email.com", refreshToken, deviceId);
-jlrSharp.AutoRefreshTokens = true;
 ```
 ### Retreive the default vehicle
 ```csharp
