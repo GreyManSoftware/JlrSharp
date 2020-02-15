@@ -35,11 +35,11 @@ namespace JlrSharp.Responses
                 ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json",
             };
 
-            IRestResponse stopResponse = PostRequest($"vehicles/{vin}/engineOn", httpHeaders, GenerateAuthenticationToken("REON", pin));
+            IRestResponse restResponse = PostRequest($"vehicles/{vin}/engineOn", httpHeaders, GenerateAuthenticationToken("REON", pin));
 
-            if (!stopResponse.IsSuccessful)
+            if (!restResponse.IsSuccessful)
             {
-                throw new InvalidOperationException("Error starting engine");
+                throw new RequestException("Start Engine", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -54,11 +54,11 @@ namespace JlrSharp.Responses
                 ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json",
             };
 
-            IRestResponse stopResponse = PostRequest($"vehicles/{vin}/engineOff", httpHeaders, GenerateAuthenticationToken("REOFF", pin));
+            IRestResponse restResponse = PostRequest($"vehicles/{vin}/engineOff", httpHeaders, GenerateAuthenticationToken("REOFF", pin));
 
-            if (!stopResponse.IsSuccessful)
+            if (!restResponse.IsSuccessful)
             {
-                throw new InvalidOperationException("Error stopping engine");
+                throw new RequestException("Stop Engine", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -73,11 +73,11 @@ namespace JlrSharp.Responses
                 ["Content-Type"] = "application/json",
             };
 
-            IRestResponse climateTempResponse = GetRequest($"vehicles/{vin}/settings/ClimateControlRccTargetTemp", httpHeaders);
-
-            if (!climateTempResponse.IsSuccessful)
+            IRestResponse restResponse = GetRequest($"vehicles/{vin}/settings/ClimateControlRccTargetTemp", httpHeaders);
+            
+            if (!restResponse.IsSuccessful)
             {
-                throw new InvalidOperationException("Error retrieving climate target temperature");
+                throw new RequestException("Get Climate Settings", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -91,11 +91,11 @@ namespace JlrSharp.Responses
                 ["Content-Type"] = "application/json",
             };
 
-            IRestResponse climateTempResponse = PostRequest($"vehicles/{vin}/settings", httpHeaders, new ClimateControlSettings());
+            IRestResponse restResponse = PostRequest($"vehicles/{vin}/settings", httpHeaders, new ClimateControlSettings());
 
-            if (!climateTempResponse.IsSuccessful || climateTempResponse.StatusCode == System.Net.HttpStatusCode.NoContent)
+            if (!restResponse.IsSuccessful || restResponse.StatusCode == System.Net.HttpStatusCode.NoContent)
             {
-                throw new InvalidOperationException("Error setting climate target setting");
+                throw new RequestException("Set Climate Settings", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -114,12 +114,12 @@ namespace JlrSharp.Responses
             };
 
             ApiResponse climateToken = GenerateAuthenticationToken("ECC", pin);
-            IRestResponse climateResponse = PostRequest($"vehicles/{vin}/preconditioning", httpHeaders,
+            IRestResponse restResponse = PostRequest($"vehicles/{vin}/preconditioning", httpHeaders,
                 new EvClimatePreconditioningSettings(climateToken["token"], startStop, targetTemperature));
 
-            if (!climateResponse.IsSuccessful)
+            if (!restResponse.IsSuccessful)
             {
-                throw new InvalidOperationException("Error starting engine");
+                throw new RequestException("Ev pre-condition", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -193,11 +193,11 @@ namespace JlrSharp.Responses
                 ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v3+json; charset=utf-8",
             };
 
-            IRestResponse honkBlinkResponse = PostRequest($"vehicles/{vin}/honkBlink", httpHeaders, GenerateAuthenticationToken("HBLF", GetVinProtectedPin()));
+            IRestResponse restResponse = PostRequest($"vehicles/{vin}/honkBlink", httpHeaders, GenerateAuthenticationToken("HBLF", GetVinProtectedPin()));
 
-            if (!honkBlinkResponse.IsSuccessful)
+            if (!restResponse.IsSuccessful)
             {
-                throw new InvalidOperationException("Error honk and blinking");
+                throw new RequestException("Honk and blink", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -212,12 +212,12 @@ namespace JlrSharp.Responses
                 ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json"
             };
 
-            IRestResponse unlockResponse = PostRequest($"vehicles/{vin}/lock", httpHeaders,
+            IRestResponse restResponse = PostRequest($"vehicles/{vin}/lock", httpHeaders,
                 GenerateAuthenticationToken("RDL", pin));
 
-            if (!unlockResponse.IsSuccessful)
+            if (!restResponse.IsSuccessful)
             {
-                throw new InvalidOperationException("Error locking vehicle");
+                throw new RequestException("Lock vehicle", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -232,12 +232,12 @@ namespace JlrSharp.Responses
                 ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json"
             };
 
-            IRestResponse unlockResponse = PostRequest($"vehicles/{vin}/unlock", httpHeaders,
+            IRestResponse restResponse = PostRequest($"vehicles/{vin}/unlock", httpHeaders,
                 GenerateAuthenticationToken("RDU", pin));
-            
-            if (!unlockResponse.IsSuccessful)
+
+            if (!restResponse.IsSuccessful)
             {
-                throw new InvalidOperationException("Error unlocking vehicle");
+                throw new RequestException("Unlock vehicle", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -253,14 +253,14 @@ namespace JlrSharp.Responses
                 ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v3+json; charset=utf-8"
             };
 
-            IRestResponse healthResponse = PostRequest($"vehicles/{vin}/healthstatus", httpHeaders, GenerateAuthenticationToken("VHS"));
+            IRestResponse restResponse = PostRequest($"vehicles/{vin}/healthstatus", httpHeaders, GenerateAuthenticationToken("VHS"));
 
-            if (!healthResponse.IsSuccessful)
+            if (!restResponse.IsSuccessful)
             {
-                throw new InvalidOperationException("Error retrieving vehicle health status");
+                throw new RequestException("Vehicle health status", restResponse.Content, restResponse.ErrorException);
             }
 
-            return JsonConvert.DeserializeObject<VehicleHealthReport>(healthResponse.Content);
+            return JsonConvert.DeserializeObject<VehicleHealthReport>(restResponse.Content);
         }
 
         /// <summary>
@@ -268,11 +268,11 @@ namespace JlrSharp.Responses
         /// </summary>
         public void GetSubscriptions()
         {
-            IRestResponse subscriptionResponse = GetRequest($"vehicles/{vin}/subscriptionpackages", new HttpHeaders());
+            IRestResponse restResponse = GetRequest($"vehicles/{vin}/subscriptionpackages", new HttpHeaders());
 
-            if (!subscriptionResponse.IsSuccessful)
+            if (!restResponse.IsSuccessful)
             {
-                throw new InvalidOperationException("Error getting vehicle subscriptions");
+                throw new RequestException("Get subscriptions", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -282,14 +282,14 @@ namespace JlrSharp.Responses
         public void RefreshVehicleStatusReport()
         {
             HttpHeaders httpHeaders = new HttpHeaders {["Accept"] = @"application/vnd.ngtp.org.if9.healthstatus-v2+json"};
-            IRestResponse<VehicleStatusReport> vehicleStatusResponse = GetRequest<VehicleStatusReport>($"vehicles/{vin}/status", httpHeaders);
+            IRestResponse<VehicleStatusReport> restResponse = GetRequest<VehicleStatusReport>($"vehicles/{vin}/status", httpHeaders);
 
-            if (!vehicleStatusResponse.IsSuccessful)
+            if (!restResponse.IsSuccessful)
             {
-                throw new InvalidOperationException("Error retrieving vehicle status report");
+                throw new RequestException("Get vehicle status", restResponse.Content, restResponse.ErrorException);
             }
 
-            VehicleStatus = vehicleStatusResponse.Data;
+            VehicleStatus = restResponse.Data;
         }
 
         /// <summary>
@@ -302,14 +302,14 @@ namespace JlrSharp.Responses
         {
             TokenData tokenData = GenerateTokenData(serviceName, pin);
             HttpHeaders httpHeaders = new HttpHeaders {["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.AuthenticateRequest-v2+json; charset=utf-8"};
-            IRestResponse tokenResponse = PostRequest($"vehicles/{vin}/users/{userId}/authenticate", httpHeaders, tokenData);
+            IRestResponse restResponse = PostRequest($"vehicles/{vin}/users/{userId}/authenticate", httpHeaders, tokenData);
 
-            if (!tokenResponse.IsSuccessful)
+            if (!restResponse.IsSuccessful)
             {
-                throw new InvalidOperationException($"Error generating {serviceName} token");
+                throw new RequestException($"Error generating { serviceName } token", restResponse.Content, restResponse.ErrorException);
             }
 
-            return JsonConvert.DeserializeObject<ApiResponse>(tokenResponse.Content);
+            return JsonConvert.DeserializeObject<ApiResponse>(restResponse.Content);
         }
 
         /// <summary>
