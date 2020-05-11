@@ -7,6 +7,7 @@ namespace JlrSharp.Responses
     /// <summary>
     /// Provides a breakdown of the vehicles status
     /// </summary>
+    [Serializable]
     public class VehicleStatus
     {
         public string Vin { get; set; }
