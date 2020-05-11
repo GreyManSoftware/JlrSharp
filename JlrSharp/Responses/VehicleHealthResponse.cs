@@ -1,5 +1,8 @@
 ﻿namespace JlrSharp.Responses
 {
+    /// <summary>
+    /// This is an internal structure used by the Jaguar API
+    /// </summary>
     public class VehicleHealthReport
     {
         public string status { get; set; }

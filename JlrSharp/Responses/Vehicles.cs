@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using JlrSharp.Requests;
 using JlrSharp.Utils;
 using Newtonsoft.Json;
@@ -21,7 +22,8 @@ namespace JlrSharp.Responses
         public string userId { get; set; }
         public string vin { get; set; }
         public string role { get; set; }
-        public VehicleStatusReport VehicleStatus { get; private set; }
+        private VehicleStatusReport VehicleStatusRaw { get; set; }
+        public VehicleStatus Status => new VehicleStatus(this);
         public bool AutoRefreshTokens { get; set; }
 
         /// <summary>
@@ -74,7 +76,7 @@ namespace JlrSharp.Responses
             };
 
             IRestResponse restResponse = GetRequest($"vehicles/{vin}/settings/ClimateControlRccTargetTemp", httpHeaders);
-            
+
             if (!restResponse.IsSuccessful)
             {
                 throw new RequestException("Get Climate Settings", restResponse.Content, restResponse.ErrorException);
@@ -128,7 +130,7 @@ namespace JlrSharp.Responses
         /// </summary>
         public int GetServiceDueInMiles()
         {
-            VehicleStatusReport.VehicleStatus odometerReading = VehicleStatus.vehicleStatus.First(status => status.key == "EXT_KILOMETERS_TO_SERVICE");
+            VehicleStatusReport.VehicleStatus odometerReading = VehicleStatusRaw.vehicleStatus.First(status => status.key == "EXT_KILOMETERS_TO_SERVICE");
             return Convert.ToInt32(Convert.ToDouble(odometerReading.value) / 1.609);
         }
 
@@ -137,7 +139,7 @@ namespace JlrSharp.Responses
         /// </summary>
         public int GetMileage()
         {
-            VehicleStatusReport.VehicleStatus odometerReading = VehicleStatus.vehicleStatus.First(status => status.key == "ODOMETER_MILES");
+            VehicleStatusReport.VehicleStatus odometerReading = VehicleStatusRaw.vehicleStatus.First(status => status.key == "ODOMETER_MILES");
             return Convert.ToInt32(odometerReading.value);
         }
 
@@ -147,7 +149,7 @@ namespace JlrSharp.Responses
         /// <returns></returns>
         public int GetFuelLevelPercentage()
         {
-            VehicleStatusReport.VehicleStatus odometerReading = VehicleStatus.vehicleStatus.First(status => status.key == "FUEL_LEVEL_PERC");
+            VehicleStatusReport.VehicleStatus odometerReading = VehicleStatusRaw.vehicleStatus.First(status => status.key == "FUEL_LEVEL_PERC");
             return Convert.ToInt32(odometerReading.value);
         }
 
@@ -157,7 +159,7 @@ namespace JlrSharp.Responses
         /// <returns></returns>
         public int GetDistanceUntilEmpty()
         {
-            VehicleStatusReport.VehicleStatus remainingFuel = VehicleStatus.vehicleStatus.First(status => status.key == "DISTANCE_TO_EMPTY_FUEL");
+            VehicleStatusReport.VehicleStatus remainingFuel = VehicleStatusRaw.vehicleStatus.First(status => status.key == "DISTANCE_TO_EMPTY_FUEL");
             return Convert.ToInt32(Convert.ToDouble(remainingFuel.value) / 1.609);
         }
 
@@ -167,7 +169,7 @@ namespace JlrSharp.Responses
         /// <returns></returns>
         public int GetRemainingClimateRunTime()
         {
-            VehicleStatusReport.VehicleStatus remainingRunTime = VehicleStatus.vehicleStatus.First(status => status.key == "CLIMATE_STATUS_REMAINING_RUNTIME");
+            VehicleStatusReport.VehicleStatus remainingRunTime = VehicleStatusRaw.vehicleStatus.First(status => status.key == "CLIMATE_STATUS_REMAINING_RUNTIME");
             return Convert.ToInt32(remainingRunTime.value);
         }
 
@@ -178,8 +180,84 @@ namespace JlrSharp.Responses
         public string GetVehicleStateType()
         {
             //TODO: Need to translate these into human readable messages
-            VehicleStatusReport.VehicleStatus vehicleStateType = VehicleStatus.vehicleStatus.First(status => status.key == "VEHICLE_STATE_TYPE");
+            VehicleStatusReport.VehicleStatus vehicleStateType = VehicleStatusRaw.vehicleStatus.First(status => status.key == "VEHICLE_STATE_TYPE");
             return vehicleStateType.ToString();
+        }
+
+        /// <summary>
+        /// Returns the door lock status
+        /// </summary>
+        /// <returns></returns>
+        public DoorStatus GetDoorLockStatus()
+        {
+            // Jaguar store the pressure in Kilopascal
+            DoorStatus doors = new DoorStatus
+            {
+                IsBonnetLocked = Convert.ToBoolean((string)VehicleStatusRaw.vehicleStatus.First(door => door.key == "DOOR_ENGINE_HOOD_LOCK_STATUS").value == "LOCKED"),
+                IsFrontLeftDoorLocked = Convert.ToBoolean((string)VehicleStatusRaw.vehicleStatus.First(door => door.key == "DOOR_FRONT_LEFT_LOCK_STATUS").value == "LOCKED"),
+                IsFrontRightDoorLocked = Convert.ToBoolean((string)VehicleStatusRaw.vehicleStatus.First(door => door.key == "DOOR_FRONT_RIGHT_LOCK_STATUS").value == "LOCKED"),
+                IsRearLeftDoorLocked = Convert.ToBoolean((string)VehicleStatusRaw.vehicleStatus.First(door => door.key == "DOOR_REAR_LEFT_LOCK_STATUS").value == "LOCKED"),
+                IsRearRightDoorLocked = Convert.ToBoolean((string)VehicleStatusRaw.vehicleStatus.First(door => door.key == "DOOR_REAR_RIGHT_LOCK_STATUS").value == "LOCKED"),
+                IsBootLocked = !Convert.ToBoolean((string)VehicleStatusRaw.vehicleStatus.First(door => door.key == "DOOR_IS_BOOT_LOCKED").value == "LOCKED"),
+            };
+
+            return doors;
+        }
+
+        /// <summary>
+        /// Returns the window position status
+        /// </summary>
+        /// <returns></returns>
+        public WindowStatus GetWindowStatus()
+        {
+            WindowStatus windows = new WindowStatus
+            {
+                IsFrontLeftWindowClosed =
+                    Convert.ToBoolean((string) VehicleStatusRaw.vehicleStatus
+                        .First(door => door.key == "WINDOW_FRONT_LEFT_STATUS").value == "CLOSED"),
+                IsFrontRightWindowClosed =
+                    Convert.ToBoolean((string) VehicleStatusRaw.vehicleStatus
+                        .First(door => door.key == "WINDOW_FRONT_RIGHT_STATUS").value == "CLOSED"),
+                IsRearLeftWindowClosed =
+                    Convert.ToBoolean((string) VehicleStatusRaw.vehicleStatus
+                        .First(door => door.key == "WINDOW_REAR_LEFT_STATUS").value == "CLOSED"),
+                IsRearRightWindowClosed =
+                    Convert.ToBoolean((string) VehicleStatusRaw.vehicleStatus
+                        .First(door => door.key == "WINDOW_REAR_RIGHT_STATUS").value == "CLOSED"),
+            };
+
+            return windows;
+        }
+
+        /// <summary>
+        /// Returns whether the engine is running
+        /// </summary>
+        public bool IsEngineRunning()
+        {
+            return Convert.ToBoolean((string)VehicleStatusRaw.vehicleStatus.First(door => door.key == "VEHICLE_STATE_TYPE").value != "KEY_REMOVED");
+        }
+
+
+        /// <summary>
+        /// Returns the tyre pressures
+        /// </summary>
+        /// <returns></returns>
+        public TyrePressures GetTyrePressures()
+        {
+            // Jaguar store the pressure in Kilopascal
+            TyrePressures tyrePressures = new TyrePressures
+            {
+                FrontLeft = (int)(Convert.ToInt32(VehicleStatusRaw.vehicleStatus
+                    .First(tyre => tyre.key == "TYRE_PRESSURE_FRONT_LEFT").value) / 6.895),
+                FrontRight = (int)(Convert.ToInt32(VehicleStatusRaw.vehicleStatus
+                    .First(tyre => tyre.key == "TYRE_PRESSURE_FRONT_RIGHT").value) / 6.895),
+                RearLeft = (int)(Convert.ToInt32(VehicleStatusRaw.vehicleStatus
+                    .First(tyre => tyre.key == "TYRE_PRESSURE_REAR_LEFT").value) / 6.895),
+                RearRight = (int)(Convert.ToInt32(VehicleStatusRaw.vehicleStatus
+                    .First(tyre => tyre.key == "TYRE_PRESSURE_REAR_RIGHT").value) / 6.895)
+            };
+
+            return tyrePressures;
         }
 
         /// <summary>
@@ -242,10 +320,19 @@ namespace JlrSharp.Responses
         }
 
         /// <summary>
+        /// Determines if the vehicle is locked
+        /// </summary>
+        /// <returns></returns>
+        public bool IsLocked()
+        {
+            return Convert.ToBoolean(VehicleStatusRaw.vehicleStatus.First(lockedDoors => lockedDoors.key == "DOOR_IS_ALL_DOORS_LOCKED").value);
+        }
+
+        /// <summary>
         /// Returns the Vehicle Health Report
         /// </summary>
         /// <returns></returns>
-        public VehicleHealthReport GetVehicleHealth()
+        private VehicleHealthReport GetVehicleHealth()
         {
             HttpHeaders httpHeaders = new HttpHeaders
             {
@@ -281,7 +368,7 @@ namespace JlrSharp.Responses
         /// </summary>
         public void RefreshVehicleStatusReport()
         {
-            HttpHeaders httpHeaders = new HttpHeaders {["Accept"] = @"application/vnd.ngtp.org.if9.healthstatus-v2+json"};
+            HttpHeaders httpHeaders = new HttpHeaders { ["Accept"] = @"application/vnd.ngtp.org.if9.healthstatus-v2+json" };
             IRestResponse<VehicleStatusReport> restResponse = GetRequest<VehicleStatusReport>($"vehicles/{vin}/status", httpHeaders);
 
             if (!restResponse.IsSuccessful)
@@ -289,7 +376,7 @@ namespace JlrSharp.Responses
                 throw new RequestException("Get vehicle status", restResponse.Content, restResponse.ErrorException);
             }
 
-            VehicleStatus = restResponse.Data;
+            VehicleStatusRaw = restResponse.Data;
         }
 
         /// <summary>
@@ -301,7 +388,7 @@ namespace JlrSharp.Responses
         private ApiResponse GenerateAuthenticationToken(string serviceName, string pin = "")
         {
             TokenData tokenData = GenerateTokenData(serviceName, pin);
-            HttpHeaders httpHeaders = new HttpHeaders {["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.AuthenticateRequest-v2+json; charset=utf-8"};
+            HttpHeaders httpHeaders = new HttpHeaders { ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.AuthenticateRequest-v2+json; charset=utf-8" };
             IRestResponse restResponse = PostRequest($"vehicles/{vin}/users/{userId}/authenticate", httpHeaders, tokenData);
 
             if (!restResponse.IsSuccessful)
