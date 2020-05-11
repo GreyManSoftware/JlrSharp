@@ -7,6 +7,7 @@ namespace JlrSharp.Responses
     /// <summary>
     /// Contains the lock status for each door
     /// </summary>
+    [Serializable]
     public class DoorStatus
     {
         public bool IsBonnetLocked { get; set; }
@@ -20,6 +21,7 @@ namespace JlrSharp.Responses
     /// <summary>
     /// Contains the status of each window
     /// </summary>
+    [Serializable]
     public class WindowStatus
     {
         public bool IsFrontLeftWindowClosed { get; set; }
@@ -27,10 +29,11 @@ namespace JlrSharp.Responses
         public bool IsRearLeftWindowClosed { get; set; }
         public bool IsRearRightWindowClosed { get; set; }
     }
-    
+
     /// <summary>
     /// Contains the tyre pressures, stored in pound-force per square inch (PSI)
     /// </summary>
+    [Serializable]
     public class TyrePressures
     {
         public int FrontLeft { get; set; }
