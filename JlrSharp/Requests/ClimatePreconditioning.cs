@@ -8,8 +8,13 @@ namespace JlrSharp.Requests
     public class ClimateControlSettings
     {
         public string key = "ClimateControlRccTargetTemp";
-        public string value = (25 * 2).ToString();
-        public bool applied = true;
+        public string value;
+        public int applied = 1;
+
+        public ClimateControlSettings(int targetTemp = 41)
+        {
+            value = targetTemp.ToString();
+        }
     }
 
     /// <summary>

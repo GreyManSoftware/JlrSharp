@@ -13,26 +13,11 @@ namespace JlrSharpRunner
         {
             Trace.Listeners.Add(new ConsoleTraceListener());
 
-            // Create the credential objects
-            UserDetails userDetails = new UserDetails
-            {
-                DeviceId = Guid.Parse("EBE7F85C-023C-4880-A94E-74F25510CCC2"),
-                DeviceIdExpiry = DateTime.Now.AddHours(24),
-                Email = "benjie@still-waters.co.uk",
-                UserId = "16DE9E3D9CA",
-            };
-
-            TokenStore tokenStore = new TokenStore
-            {
-                access_token = "a5de7436-4c3b-4021-9b0a-bcb1ff9e2b5a",
-                CreatedDate = DateTime.Now,
-            };
-
             // Set the pin
-            string myPin = "2611";
+            string myPin = "1254";
 
             // Connect to the JLR API
-            JlrSharpConnection jlrSharp = new JlrSharpConnection(userDetails, tokenStore);
+            JlrSharpConnection jlrSharp = new JlrSharpConnection();
 
             // Disable automatic refreshing of the tokens
             jlrSharp.AutoRefreshTokens = false;
@@ -46,6 +31,7 @@ namespace JlrSharpRunner
             if (defaultVehicle is GasVehicle gasVehicle)
             {
                 Console.WriteLine("We got a gas vehicle");
+                gasVehicle.GetCurrentClimateSettings();
             }
             else if (defaultVehicle is ElectricVehicle electricVehicle)
             {

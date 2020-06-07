@@ -15,7 +15,6 @@ namespace JlrSharp.Responses
         public List<IVehicle> Vehicles { get; set; } = new List<IVehicle>();
     }
 
-    // TODO: Make Vehicle abstract and create EV and Gas classes that derive it
     [Serializable]
     public abstract class Vehicle : IVehicle, IVehicleBaseFunctionality
     {
@@ -30,43 +29,6 @@ namespace JlrSharp.Responses
         public bool AutoRefreshTokens { get; set; }
         public VehicleFuelType FuelType { get; set; }
 
-        // TODO: This currently doesn't work
-        /// <summary>
-        /// Retrieves the current climate control setting
-        /// </summary>
-        public void GetCurrentClimateSettings()
-        {
-            HttpHeaders httpHeaders = new HttpHeaders
-            {
-                ["Content-Type"] = "application/json",
-            };
-
-            IRestResponse restResponse = GetRequest($"vehicles/{vin}/settings/ClimateControlRccTargetTemp", httpHeaders);
-
-            if (!restResponse.IsSuccessful)
-            {
-                throw new RequestException("Get Climate Settings", restResponse.Content, restResponse.ErrorException);
-            }
-        }
-
-        // TODO: This currently doesn't work
-        public void SetClimateTemperature(string targetTemperature = "25")
-        {
-            RestRequest climateTempSetRequest = new RestRequest($"vehicles/{vin}/settings/", Method.POST);
-
-            HttpHeaders httpHeaders = new HttpHeaders
-            {
-                ["Content-Type"] = "application/json",
-            };
-
-            IRestResponse restResponse = PostRequest($"vehicles/{vin}/settings", httpHeaders, new ClimateControlSettings());
-
-            if (!restResponse.IsSuccessful || restResponse.StatusCode == System.Net.HttpStatusCode.NoContent)
-            {
-                throw new RequestException("Set Climate Settings", restResponse.Content, restResponse.ErrorException);
-            }
-        }
-        
         /// <summary>
         /// Retrieves the next service due in miles
         /// </summary>
@@ -107,6 +69,7 @@ namespace JlrSharp.Responses
         /// <returns></returns>
         public string GetVehicleStateType()
         {
+            // TODO: Convert the value to meaningful data
             return (string)VehicleStatusRaw.vehicleStatus.First(status => status.key == "VEHICLE_STATE_TYPE").value;
         }
 
@@ -345,7 +308,7 @@ namespace JlrSharp.Responses
         /// </summary>
         /// <param name="httpHeaders"></param>
         /// <returns>Completed rest request</returns>
-        private IRestResponse GetRequest(string url, HttpHeaders httpHeaders)
+        protected IRestResponse GetRequest(string url, HttpHeaders httpHeaders)
         {
             JlrSharpConnector.UpdateIfRequired(AutoRefreshTokens);
             RestRequest restRequest = new RestRequest(url, Method.GET, DataFormat.Json);

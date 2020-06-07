@@ -12,6 +12,44 @@ namespace JlrSharp.Responses
     [Serializable]
     public sealed class GasVehicle : Vehicle
     {
+        // TODO: This currently doesn't work
+        /// <summary>
+        /// Retrieves the current climate control setting
+        /// </summary>
+        public void GetCurrentClimateSettings()
+        {
+            HttpHeaders httpHeaders = new HttpHeaders
+            {
+                ["Content-Type"] = "application/json",
+            };
+
+            IRestResponse restResponse = GetRequest($"vehicles/{vin}/settings/ClimateControlRccTargetTemp", httpHeaders);
+
+            if (!restResponse.IsSuccessful)
+            {
+                throw new RequestException("Get Climate Settings", restResponse.Content, restResponse.ErrorException);
+            }
+        }
+
+        // TODO: This likely isn't working 100%
+        // Range of 31-57. 31 == cold, 57 == hot
+        public void SetClimateTemperature(int targetTemperature = 41)
+        {
+            RestRequest climateTempSetRequest = new RestRequest($"vehicles/{vin}/settings/", Method.POST);
+
+            HttpHeaders httpHeaders = new HttpHeaders
+            {
+                ["Content-Type"] = "application/json",
+            };
+
+            IRestResponse restResponse = PostRequest($"vehicles/{vin}/settings", httpHeaders, new ClimateControlSettings(42));
+
+            if (!restResponse.IsSuccessful || restResponse.StatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                throw new RequestException("Set Climate Settings", restResponse.Content, restResponse.ErrorException);
+            }
+        }
+
         public override int GetDistanceUntilEmpty()
         {
             VehicleStatusReport.VehicleStatus remainingFuel = VehicleStatusRaw.vehicleStatus.First(status => status.key == "DISTANCE_TO_EMPTY_FUEL");
