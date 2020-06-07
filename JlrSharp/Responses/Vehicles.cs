@@ -14,6 +14,7 @@ namespace JlrSharp.Responses
         public List<Vehicle> Vehicles { get; set; }
     }
 
+    // TODO: Make Vehicle abstract and create EV and Gas classes that derive it
     [Serializable]
     public sealed class Vehicle
     {
