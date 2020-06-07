@@ -10,6 +10,7 @@ namespace JlrSharp.Responses
     [Serializable]
     public class VehicleStatus
     {
+        VehicleFuelType FuelType { get; set; }
         public string Vin { get; set; }
         public int Mileage { get; set; }
         public int FuelPerc { get; set; }
@@ -25,15 +26,16 @@ namespace JlrSharp.Responses
         public VehicleStatus(Vehicle vehicle)
         {
             // This ensures we get the latest data
-            vehicle.RefreshVehicleStatusReport();
+            vehicle.GetVehicleStatusReport();
 
+            FuelType = vehicle.FuelType;
             Vin = vehicle.vin;
             Mileage = vehicle.GetMileage();
-            FuelPerc = vehicle.GetFuelLevelPercentage();
+            //FuelPerc = vehicle.GetFuelLevelPercentage();
             FuelRange = vehicle.GetDistanceUntilEmpty();
             DistanceUntilService = vehicle.GetServiceDueInMiles();
             IsLocked = vehicle.IsLocked();
-            IsRunning = vehicle.IsEngineRunning();
+            //IsRunning = vehicle.IsEngineRunning();
             Doors = vehicle.GetDoorLockStatus();
             Windows = vehicle.GetWindowStatus();
             Tyres = vehicle.GetTyrePressures();
