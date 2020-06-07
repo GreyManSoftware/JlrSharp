@@ -11,6 +11,13 @@ namespace JlrSharp.Responses.Vehicles
 {
     public sealed class ElectricVehicle : Vehicle
     {
+        public ElectricVehicle(Vehicle vehicle)
+        {
+            vin = vehicle.vin;
+            userId = vehicle.userId;
+            role = vehicle.role;
+        }
+
         /// <summary>
         /// Sets the preconditioning for electric vehicles
         /// </summary>
@@ -35,11 +42,13 @@ namespace JlrSharp.Responses.Vehicles
             }
         }
 
-        public ElectricVehicle(Vehicle vehicle)
+        /// <summary>
+        /// Determines if the vehicle is currently charging
+        /// </summary>
+        /// <returns></returns>
+        public bool IsCharging()
         {
-            vin = vehicle.vin;
-            userId = vehicle.userId;
-            role = vehicle.role;
+            return VehicleStatusRaw.vehicleStatus.Any(status => status.key == "EV_CHARGING_STATUS" && (string)status.value == "CHARGING");
         }
 
         /// <summary>
@@ -70,8 +79,8 @@ namespace JlrSharp.Responses.Vehicles
         {
             HttpHeaders httpHeaders = new HttpHeaders
             {
-                ["Accept"] = "",
-                ["Content-Type"] = @"Content-Type: application/vnd.wirelesscar.ngtp.if9.PhevService-v1+json",
+                ["Accept"] = "application/vnd.wirelesscar.ngtp.if9.ServiceStatus-v5+json",
+                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.PhevService-v1+json; charset=utf",
             };
 
             ApiResponse chargeToken = GenerateAuthenticationToken("CP", pin);
@@ -92,8 +101,8 @@ namespace JlrSharp.Responses.Vehicles
         {
             HttpHeaders httpHeaders = new HttpHeaders
             {
-                ["Accept"] = "",
-                ["Content-Type"] = @"Content-Type: application/vnd.wirelesscar.ngtp.if9.PhevService-v1+json",
+                ["Accept"] = "application/vnd.wirelesscar.ngtp.if9.ServiceStatus-v5+json",
+                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.PhevService-v1+json; charset=utf",
             };
 
             ApiResponse chargeToken = GenerateAuthenticationToken("CP", pin);
@@ -102,7 +111,7 @@ namespace JlrSharp.Responses.Vehicles
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Start charging", restResponse.Content, restResponse.ErrorException);
+                throw new RequestException("Stop charging", restResponse.Content, restResponse.ErrorException);
             }
         }
 
