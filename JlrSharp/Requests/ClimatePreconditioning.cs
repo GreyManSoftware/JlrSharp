@@ -8,33 +8,12 @@ namespace JlrSharp.Requests
     public class ClimateControlSettings
     {
         public string key = "ClimateControlRccTargetTemp";
-        public string value = (25 * 2).ToString();
-        public bool applied = true;
-    }
+        public string value;
+        public int applied = 1;
 
-    /// <summary>
-    /// Helper for creating engine start/stop requests
-    /// </summary>
-    public class ClimatePreconditioningSettings
-    {
-        public string token { get; set; }
-        public List<ServiceParameter> serviceParameters { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="token">The ECC token</param>
-        /// <param name="startStop">True starts the engine, false stops</param>
-        /// <param name="targetTemperature">Temperature is expressed without decimal point. 210 = 21.0</param>
-        public ClimatePreconditioningSettings(string reonToken)
+        public ClimateControlSettings(int targetTemp = 41)
         {
-            token = reonToken;
-            // FUEL_FIRED_HEATER_SETTING has a value of FFHSettingState = Unknown, Enabled, Disabled
-
-            serviceParameters = new List<ServiceParameter>
-            {
-                //new ServiceParameter{key = "FUEL_FIRED_HEATER_SETTING", value = targetTemperature},
-            };
+            value = targetTemp.ToString();
         }
     }
 
@@ -67,14 +46,13 @@ namespace JlrSharp.Requests
             serviceParameters = new List<ServiceParameter>
             {
                 new ServiceParameter{key = "PRECONDITIONING", value = command},
-                new ServiceParameter{key = "TARGET_TEMPERATURE_CELSIUS", value = targetTemperature},
             };
-        }
-    }
 
-    public class ServiceParameter
-    {
-        public string key { get; set; }
-        public string value { get; set; }
+            // Only add the temperature if pre-conditioning is set to start
+            if (startStop)
+            {
+                serviceParameters.Add(new ServiceParameter {key = "TARGET_TEMPERATURE_CELSIUS", value = targetTemperature});
+            }
+        }
     }
 }

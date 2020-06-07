@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using JlrSharp.Requests;
+using JlrSharp.Responses.Vehicles;
 using JlrSharp.Utils;
 using Newtonsoft.Json;
 using RestSharp;
@@ -11,120 +12,22 @@ namespace JlrSharp.Responses
 {
     public class VehicleCollection
     {
-        public List<Vehicle> Vehicles { get; set; }
+        public List<IVehicle> Vehicles { get; set; } = new List<IVehicle>();
     }
 
-    // TODO: Make Vehicle abstract and create EV and Gas classes that derive it
     [Serializable]
-    public sealed class Vehicle
+    public abstract class Vehicle : IVehicle, IVehicleBaseFunctionality
     {
         private RestClient VehicleRequestClient { get; set; }
         private JlrSharpConnection JlrSharpConnector { get; set; } // I don't like this, but I am being lazy
         public string userId { get; set; }
         public string vin { get; set; }
         public string role { get; set; }
-        private VehicleStatusReport VehicleStatusRaw { get; set; }
+        protected VehicleAttributes Attributes { get; set; }
+        protected VehicleStatusReport VehicleStatusRaw { get; set; }
         public VehicleStatus Status => new VehicleStatus(this);
         public bool AutoRefreshTokens { get; set; }
-
-        /// <summary>
-        /// Starts the engine
-        /// </summary>
-        public void StartEngine(string pin)
-        {
-            HttpHeaders httpHeaders = new HttpHeaders
-            {
-                ["Accept"] = "",
-                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json",
-            };
-
-            IRestResponse restResponse = PostRequest($"vehicles/{vin}/engineOn", httpHeaders, GenerateAuthenticationToken("REON", pin));
-
-            if (!restResponse.IsSuccessful)
-            {
-                throw new RequestException("Start Engine", restResponse.Content, restResponse.ErrorException);
-            }
-        }
-
-        /// <summary>
-        /// Stops the engine
-        /// </summary>
-        public void StopEngine(string pin)
-        {
-            HttpHeaders httpHeaders = new HttpHeaders
-            {
-                ["Accept"] = "",
-                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v2+json",
-            };
-
-            IRestResponse restResponse = PostRequest($"vehicles/{vin}/engineOff", httpHeaders, GenerateAuthenticationToken("REOFF", pin));
-
-            if (!restResponse.IsSuccessful)
-            {
-                throw new RequestException("Stop Engine", restResponse.Content, restResponse.ErrorException);
-            }
-        }
-
-        // TODO: This currently doesn't work
-        /// <summary>
-        /// Retrieves the current climate control setting
-        /// </summary>
-        public void GetCurrentClimateSettings()
-        {
-            HttpHeaders httpHeaders = new HttpHeaders
-            {
-                ["Content-Type"] = "application/json",
-            };
-
-            IRestResponse restResponse = GetRequest($"vehicles/{vin}/settings/ClimateControlRccTargetTemp", httpHeaders);
-
-            if (!restResponse.IsSuccessful)
-            {
-                throw new RequestException("Get Climate Settings", restResponse.Content, restResponse.ErrorException);
-            }
-        }
-
-        // TODO: This currently doesn't work
-        public void SetClimateTemperature(string targetTemperature = "25")
-        {
-            RestRequest climateTempSetRequest = new RestRequest($"vehicles/{vin}/settings/", Method.POST);
-
-            HttpHeaders httpHeaders = new HttpHeaders
-            {
-                ["Content-Type"] = "application/json",
-            };
-
-            IRestResponse restResponse = PostRequest($"vehicles/{vin}/settings", httpHeaders, new ClimateControlSettings());
-
-            if (!restResponse.IsSuccessful || restResponse.StatusCode == System.Net.HttpStatusCode.NoContent)
-            {
-                throw new RequestException("Set Climate Settings", restResponse.Content, restResponse.ErrorException);
-            }
-        }
-
-        /// <summary>
-        /// Sets the preconditioning for electric vehicles
-        /// </summary>
-        /// <param name="pin">The users PIN</param>
-        /// <param name="startStop">True starts the engine, false stops</param>
-        /// <param name="targetTemperature">Temperature is expressed without decimal point. 210 = 21.0</param>
-        public void EvClimatePreconditioning(string pin, bool startStop, string targetTemperature = "210")
-        {
-            HttpHeaders httpHeaders = new HttpHeaders
-            {
-                ["Accept"] = @"application/vnd.wirelesscar.ngtp.if9.ServiceStatus-v5+json",
-                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.PhevService-v1+json; charset=utf",
-            };
-
-            ApiResponse climateToken = GenerateAuthenticationToken("ECC", pin);
-            IRestResponse restResponse = PostRequest($"vehicles/{vin}/preconditioning", httpHeaders,
-                new EvClimatePreconditioningSettings(climateToken["token"], startStop, targetTemperature));
-
-            if (!restResponse.IsSuccessful)
-            {
-                throw new RequestException("Ev pre-condition", restResponse.Content, restResponse.ErrorException);
-            }
-        }
+        public VehicleFuelType FuelType { get; set; }
 
         /// <summary>
         /// Retrieves the next service due in miles
@@ -145,24 +48,10 @@ namespace JlrSharp.Responses
         }
 
         /// <summary>
-        /// Retrieves the fuel level as a percentage
-        /// </summary>
-        /// <returns></returns>
-        public int GetFuelLevelPercentage()
-        {
-            VehicleStatusReport.VehicleStatus odometerReading = VehicleStatusRaw.vehicleStatus.First(status => status.key == "FUEL_LEVEL_PERC");
-            return Convert.ToInt32(odometerReading.value);
-        }
-
-        /// <summary>
         /// Retrieves remaining miles until empty
         /// </summary>
         /// <returns></returns>
-        public int GetDistanceUntilEmpty()
-        {
-            VehicleStatusReport.VehicleStatus remainingFuel = VehicleStatusRaw.vehicleStatus.First(status => status.key == "DISTANCE_TO_EMPTY_FUEL");
-            return Convert.ToInt32(Convert.ToDouble(remainingFuel.value) / 1.609);
-        }
+        public abstract int GetDistanceUntilEmpty();
 
         /// <summary>
         /// Returns the remaining run time left for remote climate
@@ -180,9 +69,8 @@ namespace JlrSharp.Responses
         /// <returns></returns>
         public string GetVehicleStateType()
         {
-            //TODO: Need to translate these into human readable messages
-            VehicleStatusReport.VehicleStatus vehicleStateType = VehicleStatusRaw.vehicleStatus.First(status => status.key == "VEHICLE_STATE_TYPE");
-            return vehicleStateType.ToString();
+            // TODO: Convert the value to meaningful data
+            return (string)VehicleStatusRaw.vehicleStatus.First(status => status.key == "VEHICLE_STATE_TYPE").value;
         }
 
         /// <summary>
@@ -229,15 +117,6 @@ namespace JlrSharp.Responses
 
             return windows;
         }
-
-        /// <summary>
-        /// Returns whether the engine is running
-        /// </summary>
-        public bool IsEngineRunning()
-        {
-            return Convert.ToBoolean((string)VehicleStatusRaw.vehicleStatus.First(door => door.key == "VEHICLE_STATE_TYPE").value != "KEY_REMOVED");
-        }
-
 
         /// <summary>
         /// Returns the tyre pressures
@@ -329,28 +208,27 @@ namespace JlrSharp.Responses
             return Convert.ToBoolean(VehicleStatusRaw.vehicleStatus.First(lockedDoors => lockedDoors.key == "DOOR_IS_ALL_DOORS_LOCKED").value);
         }
 
-        /// <summary>
-        /// Returns the Vehicle Health Report
-        /// </summary>
-        /// <returns></returns>
-        private VehicleHealthReport GetVehicleHealth()
+        public void GetVehicleAttributes()
         {
-            HttpHeaders httpHeaders = new HttpHeaders
-            {
-                ["Accept"] = @"application/vnd.wirelesscar.ngtp.if9.ServiceStatus-v4+json",
-                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.StartServiceConfiguration-v3+json; charset=utf-8"
-            };
-
-            IRestResponse restResponse = PostRequest($"vehicles/{vin}/healthstatus", httpHeaders, GenerateAuthenticationToken("VHS"));
+            IRestResponse<VehicleAttributes> restResponse = GetRequest<VehicleAttributes>($"vehicles/{vin}/attributes", new HttpHeaders());
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Vehicle health status", restResponse.Content, restResponse.ErrorException);
+                throw new RequestException("Get attributes", restResponse.Content, restResponse.ErrorException);
             }
 
-            return JsonConvert.DeserializeObject<VehicleHealthReport>(restResponse.Content);
-        }
+            Attributes = restResponse.Data;
 
+            if (Attributes.fuelType.Equals("electric", StringComparison.OrdinalIgnoreCase))
+            {
+                FuelType = VehicleFuelType.Ev;
+            }
+            else
+            {
+                FuelType = VehicleFuelType.Gasoline;
+            }
+        }
+        
         /// <summary>
         /// Retrieves the subscriptions the vehicle is enrolled in
         /// </summary>
@@ -367,7 +245,7 @@ namespace JlrSharp.Responses
         /// <summary>
         /// Populates the vehicle status report
         /// </summary>
-        public void RefreshVehicleStatusReport()
+        public void GetVehicleStatusReport()
         {
             HttpHeaders httpHeaders = new HttpHeaders { ["Accept"] = @"application/vnd.ngtp.org.if9.healthstatus-v2+json" };
             IRestResponse<VehicleStatusReport> restResponse = GetRequest<VehicleStatusReport>($"vehicles/{vin}/status", httpHeaders);
@@ -379,14 +257,14 @@ namespace JlrSharp.Responses
 
             VehicleStatusRaw = restResponse.Data;
         }
-
+        
         /// <summary>
         /// Generate the appropriate token for the given service
         /// </summary>
         /// <param name="serviceName">The service requested</param>
         /// <param name="pin">The pin to use</param>
         /// <returns></returns>
-        private ApiResponse GenerateAuthenticationToken(string serviceName, string pin = "")
+        protected ApiResponse GenerateAuthenticationToken(string serviceName, string pin = "")
         {
             TokenData tokenData = GenerateTokenData(serviceName, pin);
             HttpHeaders httpHeaders = new HttpHeaders { ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.AuthenticateRequest-v2+json; charset=utf-8" };
@@ -430,7 +308,7 @@ namespace JlrSharp.Responses
         /// </summary>
         /// <param name="httpHeaders"></param>
         /// <returns>Completed rest request</returns>
-        private IRestResponse GetRequest(string url, HttpHeaders httpHeaders)
+        protected IRestResponse GetRequest(string url, HttpHeaders httpHeaders)
         {
             JlrSharpConnector.UpdateIfRequired(AutoRefreshTokens);
             RestRequest restRequest = new RestRequest(url, Method.GET, DataFormat.Json);
@@ -443,7 +321,7 @@ namespace JlrSharp.Responses
         /// </summary>
         /// <param name="httpHeaders"></param>
         /// <returns>Completed rest request</returns>
-        private IRestResponse<T> GetRequest<T>(string url, HttpHeaders httpHeaders) where T : new()
+        protected IRestResponse<T> GetRequest<T>(string url, HttpHeaders httpHeaders) where T : new()
         {
             JlrSharpConnector.UpdateIfRequired(AutoRefreshTokens);
             RestRequest restRequest = new RestRequest(url, Method.GET, DataFormat.Json);
@@ -456,7 +334,7 @@ namespace JlrSharp.Responses
         /// </summary>
         /// <param name="httpHeaders"></param>
         /// <returns>Completed rest request</returns>
-        private IRestResponse PostRequest(string url, HttpHeaders httpHeaders, object payloadData)
+        protected IRestResponse PostRequest(string url, HttpHeaders httpHeaders, object payloadData)
         {
             JlrSharpConnector.UpdateIfRequired(AutoRefreshTokens);
             RestRequest restRequest = new RestRequest(url, Method.POST);
@@ -470,7 +348,7 @@ namespace JlrSharp.Responses
         /// </summary>
         /// <param name="httpHeaders"></param>
         /// <returns>Completed rest request</returns>
-        private IRestResponse<T> PostRequest<T>(string url, HttpHeaders httpHeaders, object payloadData) where T : new()
+        protected IRestResponse<T> PostRequest<T>(string url, HttpHeaders httpHeaders, object payloadData) where T : new()
         {
             JlrSharpConnector.UpdateIfRequired(AutoRefreshTokens);
             RestRequest restRequest = new RestRequest(url, Method.POST);
@@ -484,7 +362,7 @@ namespace JlrSharp.Responses
         /// </summary>
         /// <param name="restRequest"></param>
         /// <param name="httpHeaders"></param>
-        private void UpdateRestRequestHeaders(RestRequest restRequest, HttpHeaders httpHeaders)
+        protected void UpdateRestRequestHeaders(RestRequest restRequest, HttpHeaders httpHeaders)
         {
             //Add all the custom headers to the request
             foreach (string httpHeaderKey in httpHeaders.Keys)
@@ -501,7 +379,6 @@ namespace JlrSharp.Responses
         {
             VehicleRequestClient = vehicleRequestClient;
             JlrSharpConnector = jlrSharpConnection;
-            RefreshVehicleStatusReport();
         }
     }
 }

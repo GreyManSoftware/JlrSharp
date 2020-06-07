@@ -7,8 +7,11 @@ using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
 using JlrSharp.Responses;
+using JlrSharp.Responses.Vehicles;
 using JlrSharp.Utils;
+using Newtonsoft.Json;
 using RestSharp;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace JlrSharp
 {
@@ -172,9 +175,9 @@ namespace JlrSharp
             // Grab all associated vehicles
             GetVehicles();
 
-//#if DEBUG
-//            DumpData();
-//#endif
+            //#if DEBUG
+            //            DumpData();
+            //#endif
         }
 
         /// <summary>
@@ -210,7 +213,7 @@ namespace JlrSharp
         /// <returns></returns>
         public AuthorisedUser GetAuthorisedUser()
         {
-            return new AuthorisedUser {UserInfo = _userInfo, TokenData = _tokens};
+            return new AuthorisedUser { UserInfo = _userInfo, TokenData = _tokens };
         }
 
         /// <summary>
@@ -219,7 +222,7 @@ namespace JlrSharp
         private void RegisterDevice()
         {
             RestRequest deviceRegistrationRequest = new RestRequest($"users/{_userInfo.Email}/clients", Method.POST, DataFormat.Json);
-            
+
             Dictionary<string, string> deviceRegistrationData = new Dictionary<string, string>
             {
                 ["access_token"] = _tokens.access_token,
@@ -261,7 +264,7 @@ namespace JlrSharp
         /// </summary>
         public Vehicle GetPrimaryVehicle()
         {
-            return _vehicles.Vehicles.First(v => v.role == "Primary");
+            return (Vehicle)_vehicles.Vehicles.First(v => v.role == "Primary");
         }
 
         /// <summary>
@@ -271,19 +274,46 @@ namespace JlrSharp
         private void GetVehicles()
         {
             RestRequest getVehiclesRequest = new RestRequest($"users/{_userInfo.UserId}/vehicles?primaryOnly=false", Method.GET, DataFormat.Json);
-            IRestResponse<VehicleCollection> response = _vehicleClient.Execute<VehicleCollection>(getVehiclesRequest);
+            IRestResponse response = _vehicleClient.Execute(getVehiclesRequest);
 
             if (!response.IsSuccessful)
             {
                 throw new InvalidOperationException("Error retrieving associated vehicles");
             }
 
-            _vehicles = response.Data;
+            DummyVehicleCollection vehicleData = JsonConvert.DeserializeObject<DummyVehicleCollection>(response.Content);
 
-            foreach (Vehicle vehicle in _vehicles.Vehicles)
+            _vehicles = new VehicleCollection();
+
+            // Create specific vehicle classes depending on the fuel type
+            foreach (DummyVehicle vehicle in vehicleData.vehicles)
             {
                 vehicle.SetVehicleRequestClient(_vehicleClient, this);
                 vehicle.AutoRefreshTokens = AutoRefreshTokens;
+
+                // Grab attributes so we can answer the information below
+                vehicle.GetVehicleAttributes();
+
+                Vehicle specificVehicle = null;
+
+                if (vehicle.FuelType == VehicleFuelType.Gasoline)
+                {
+                    specificVehicle = new GasVehicle(vehicle);
+                }
+                else if (vehicle.FuelType == VehicleFuelType.Ev)
+                {
+                    specificVehicle = new ElectricVehicle(vehicle);
+                }
+
+                if (specificVehicle == null)
+                {
+                    throw new Exception($"Unidentified vehicle fuel type");
+                }
+
+                specificVehicle.SetVehicleRequestClient(_vehicleClient, this);
+                specificVehicle.GetVehicleStatusReport();
+                specificVehicle.GetVehicleAttributes();
+                _vehicles.Vehicles.Add(specificVehicle);
             }
         }
 
@@ -301,7 +331,7 @@ namespace JlrSharp
 
             if (!performRefresh)
             {
-                return false; 
+                return false;
             }
 
             // Try to refresh the token using refresh token or username and password
@@ -333,4 +363,12 @@ namespace JlrSharp
             return true;
         }
     }
+}
+
+/// <summary>
+/// Used to deserialise the data back from Jaguar so we can determine the vehicle type
+/// </summary>
+internal sealed class DummyVehicleCollection
+{
+    public List<DummyVehicle> vehicles { get; set; }
 }

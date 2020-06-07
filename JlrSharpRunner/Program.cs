@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using JlrSharp;
 using JlrSharp.Responses;
+using JlrSharp.Responses.Vehicles;
 
 namespace JlrSharpRunner
 {
@@ -10,27 +11,35 @@ namespace JlrSharpRunner
     {
         static void Main(string[] args)
         {
-            string myPin = "1234";
             Trace.Listeners.Add(new ConsoleTraceListener());
 
+            // Set the pin
+            string myPin = "1234";
+
+            // Connect to the JLR API
             JlrSharpConnection jlrSharp = new JlrSharpConnection();
-            jlrSharp.AutoRefreshTokens = true;
+
+            // Disable automatic refreshing of the tokens
+            jlrSharp.AutoRefreshTokens = false;
+
             Trace.TraceInformation("Grabbing default vehicle");
+            
+            // Grab the generic vehicle
             Vehicle defaultVehicle = jlrSharp.GetPrimaryVehicle();
 
-            // Basic functionality
-            VehicleStatus vehicleStatus = defaultVehicle.Status;
-            int runTime = defaultVehicle.GetRemainingClimateRunTime();
-            //int milesRemainingUntilService = defaultVehicle.GetDistanceUntilEmpty();
-            //defaultVehicle.HonkAndBlink();
-            //Task.Delay(5000).Wait();
-            //defaultVehicle.Unlock(myPin);
-            //Task.Delay(5000).Wait();
-            //defaultVehicle.Lock(myPin);
-            //Task.Delay(5000).Wait();
-            //defaultVehicle.StartEngine(myPin);
-            //Task.Delay(5000).Wait();
-            //defaultVehicle.StopEngine(myPin);
+            // Determine the vehicle type
+            if (defaultVehicle is GasVehicle gasVehicle)
+            {
+                Console.WriteLine("We got a gas vehicle");
+                gasVehicle.GetCurrentClimateSettings();
+            }
+            else if (defaultVehicle is ElectricVehicle electricVehicle)
+            {
+                Console.WriteLine("We got an EV");
+                Console.Write($"Time until charged {electricVehicle.GetTimeUntilCharged()}");
+                Console.WriteLine($"Distance until empty{electricVehicle.GetDistanceUntilEmpty()}");
+                Console.WriteLine($"Charge level: {electricVehicle.GetChargeLevel()}");
+            }
         }
     }
 }
