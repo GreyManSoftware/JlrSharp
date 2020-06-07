@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace JlrSharp.Responses
 {
+    /// <summary>
+    /// This is an internal structure used by the Jaguar API
+    /// </summary>
     public class VehicleStatusReport
     {
         public List<VehicleStatus> vehicleStatus { get; set; }
