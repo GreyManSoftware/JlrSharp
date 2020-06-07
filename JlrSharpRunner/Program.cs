@@ -19,7 +19,7 @@ namespace JlrSharpRunner
             Vehicle defaultVehicle = jlrSharp.GetPrimaryVehicle();
 
             // Basic functionality
-            VehicleHealthReport healthReport = defaultVehicle.GetVehicleHealth();
+            VehicleStatus vehicleStatus = defaultVehicle.Status;
             int runTime = defaultVehicle.GetRemainingClimateRunTime();
             //int milesRemainingUntilService = defaultVehicle.GetDistanceUntilEmpty();
             //defaultVehicle.HonkAndBlink();
