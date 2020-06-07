@@ -14,7 +14,7 @@ namespace JlrSharpRunner
             Trace.Listeners.Add(new ConsoleTraceListener());
 
             // Set the pin
-            string myPin = "1254";
+            string myPin = "1234";
 
             // Connect to the JLR API
             JlrSharpConnection jlrSharp = new JlrSharpConnection();
