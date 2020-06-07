@@ -11,7 +11,6 @@ namespace JlrSharp.Responses
     public class VehicleStatus
     {
         VehicleFuelType FuelType { get; set; }
-        public string Vin { get; set; }
         public int Mileage { get; set; }
         public int FuelPerc { get; set; }
         public int FuelRange { get; set; }
@@ -29,7 +28,6 @@ namespace JlrSharp.Responses
             vehicle.GetVehicleStatusReport();
 
             FuelType = vehicle.FuelType;
-            Vin = vehicle.vin;
             Mileage = vehicle.GetMileage();
             //FuelPerc = vehicle.GetFuelLevelPercentage();
             FuelRange = vehicle.GetDistanceUntilEmpty();

@@ -310,6 +310,8 @@ namespace JlrSharp
                     throw new Exception($"Unidentified vehicle fuel type");
                 }
 
+                Trace.TraceInformation($"Processing vehicle model \"{vehicle.Model}\"");
+
                 specificVehicle.SetVehicleRequestClient(_vehicleClient, this);
                 specificVehicle.GetVehicleStatusReport();
                 specificVehicle.GetVehicleAttributes();
