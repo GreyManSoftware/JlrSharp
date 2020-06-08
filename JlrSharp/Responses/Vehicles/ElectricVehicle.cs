@@ -52,6 +52,22 @@ namespace JlrSharp.Responses.Vehicles
         }
 
         /// <summary>
+        /// Determines if the vehicle is plugged in
+        /// </summary>
+        /// <returns></returns>
+        public bool IsPluggedIn()
+        {
+            string chargingStatus = (string)VehicleStatusRaw.vehicleStatus.First(status => status.key == "EV_CHARGING_METHOD").value;
+
+            if (chargingStatus != "NOTCONNECTED")
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Gets the time until battery charging is complete
         /// </summary>
         /// <returns></returns>
