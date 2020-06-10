@@ -103,3 +103,4 @@ vehicle.StartCharging(string pin); // Instructs the car to start charging
 vehicle.StopCharging(string pin); // Instructs the car to stop charging
 vehicle.StartClimatePreconditioning(string pin, string targetTemp); // Instructs the vehicle to start pre-conditioning the vehicle
 vehicle.StopClimatePreconditioning(string pin); // Instructs the vehicle to start pre-conditioning the vehicle
+```
