@@ -19,12 +19,11 @@ namespace JlrSharp.Responses.Vehicles
         }
 
         /// <summary>
-        /// Sets the preconditioning for electric vehicles
+        /// Starts the preconditioning for electric vehicles
         /// </summary>
         /// <param name="pin">The users PIN</param>
-        /// <param name="startStop">Starts or stops the pre-conditioning</param>
         /// <param name="targetTemperature">Temperature is expressed without decimal point. 210 = 21.0</param>
-        public void SetClimatePreconditioning(string pin, bool startStop, string targetTemperature = "210")
+        public void StartClimatePreconditioning(string pin, string targetTemperature = "210")
         {
             HttpHeaders httpHeaders = new HttpHeaders
             {
@@ -34,7 +33,29 @@ namespace JlrSharp.Responses.Vehicles
 
             ApiResponse climateToken = GenerateAuthenticationToken("ECC", pin);
             IRestResponse restResponse = PostRequest($"vehicles/{vin}/preconditioning", httpHeaders,
-                new EvClimatePreconditioningSettings(climateToken["token"], startStop, targetTemperature));
+                new EvClimatePreconditioningSettings(climateToken["token"], true, targetTemperature));
+
+            if (!restResponse.IsSuccessful)
+            {
+                throw new RequestException("Ev pre-condition", restResponse.Content, restResponse.ErrorException);
+            }
+        }
+
+        /// <summary>
+        /// Stops the preconditioning for electric vehicles
+        /// </summary>
+        /// <param name="pin">The users PIN</param>
+        public void StopClimatePreconditioning(string pin)
+        {
+            HttpHeaders httpHeaders = new HttpHeaders
+            {
+                ["Accept"] = @"application/vnd.wirelesscar.ngtp.if9.ServiceStatus-v5+json",
+                ["Content-Type"] = @"application/vnd.wirelesscar.ngtp.if9.PhevService-v1+json; charset=utf",
+            };
+
+            ApiResponse climateToken = GenerateAuthenticationToken("ECC", pin);
+            IRestResponse restResponse = PostRequest($"vehicles/{vin}/preconditioning", httpHeaders,
+                new EvClimatePreconditioningSettings(climateToken["token"], false, "210"));
 
             if (!restResponse.IsSuccessful)
             {
