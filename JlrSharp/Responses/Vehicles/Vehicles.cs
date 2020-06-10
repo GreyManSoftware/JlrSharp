@@ -20,6 +20,7 @@ namespace JlrSharp.Responses
     {
         private RestClient VehicleRequestClient { get; set; }
         private JlrSharpConnection JlrSharpConnector { get; set; } // I don't like this, but I am being lazy
+        public string Model => Attributes.vehicleType;
         public string userId { get; set; }
         public string vin { get; set; }
         public string role { get; set; }
@@ -102,16 +103,16 @@ namespace JlrSharp.Responses
             WindowStatus windows = new WindowStatus
             {
                 IsFrontLeftWindowClosed =
-                    Convert.ToBoolean((string) VehicleStatusRaw.vehicleStatus
+                    Convert.ToBoolean((string)VehicleStatusRaw.vehicleStatus
                         .First(door => door.key == "WINDOW_FRONT_LEFT_STATUS").value == "CLOSED"),
                 IsFrontRightWindowClosed =
-                    Convert.ToBoolean((string) VehicleStatusRaw.vehicleStatus
+                    Convert.ToBoolean((string)VehicleStatusRaw.vehicleStatus
                         .First(door => door.key == "WINDOW_FRONT_RIGHT_STATUS").value == "CLOSED"),
                 IsRearLeftWindowClosed =
-                    Convert.ToBoolean((string) VehicleStatusRaw.vehicleStatus
+                    Convert.ToBoolean((string)VehicleStatusRaw.vehicleStatus
                         .First(door => door.key == "WINDOW_REAR_LEFT_STATUS").value == "CLOSED"),
                 IsRearRightWindowClosed =
-                    Convert.ToBoolean((string) VehicleStatusRaw.vehicleStatus
+                    Convert.ToBoolean((string)VehicleStatusRaw.vehicleStatus
                         .First(door => door.key == "WINDOW_REAR_RIGHT_STATUS").value == "CLOSED"),
             };
 
@@ -228,7 +229,7 @@ namespace JlrSharp.Responses
                 FuelType = VehicleFuelType.Gasoline;
             }
         }
-        
+
         /// <summary>
         /// Retrieves the subscriptions the vehicle is enrolled in
         /// </summary>
@@ -257,7 +258,7 @@ namespace JlrSharp.Responses
 
             VehicleStatusRaw = restResponse.Data;
         }
-        
+
         /// <summary>
         /// Generate the appropriate token for the given service
         /// </summary>

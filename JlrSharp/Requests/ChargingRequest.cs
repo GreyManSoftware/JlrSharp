@@ -16,7 +16,7 @@ namespace JlrSharp.Requests
 
             serviceParameters = new List<ServiceParameter>
             {
-                new ServiceParameter{key = "CHARGE_NOW_SETTINGS", value = command}
+                new ServiceParameter{key = "CHARGE_NOW_SETTING", value = command}
             };
         }
     }
