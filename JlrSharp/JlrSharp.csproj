@@ -15,7 +15,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>jaguarApiLogo.PNG</PackageIcon>
     <PackageIconUrl />
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release'">
