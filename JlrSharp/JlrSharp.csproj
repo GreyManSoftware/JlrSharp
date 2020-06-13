@@ -16,6 +16,10 @@
     <PackageIcon>jaguarApiLogo.PNG</PackageIcon>
     <PackageIconUrl />
     <Version>1.0.2</Version>
+    </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release'">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
