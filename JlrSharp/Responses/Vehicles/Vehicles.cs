@@ -211,7 +211,8 @@ namespace JlrSharp.Responses
 
         public void GetVehicleAttributes()
         {
-            IRestResponse<VehicleAttributes> restResponse = GetRequest<VehicleAttributes>($"vehicles/{vin}/attributes", new HttpHeaders());
+            HttpHeaders httpHeaders = new HttpHeaders { ["Accept"] = @"application/vnd.ngtp.org.VehicleAttributes-v4+json" };
+            IRestResponse<VehicleAttributes> restResponse = GetRequest<VehicleAttributes>($"vehicles/{vin}/attributes", httpHeaders);
 
             if (!restResponse.IsSuccessful)
             {
