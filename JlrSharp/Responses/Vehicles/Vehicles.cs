@@ -44,8 +44,18 @@ namespace JlrSharp.Responses
         /// </summary>
         public int GetMileage()
         {
-            VehicleStatusReport.VehicleStatus odometerReading = VehicleStatusRaw.vehicleStatus.First(status => status.key == "ODOMETER_MILES");
-            return Convert.ToInt32(odometerReading.value);
+            int milage = 0;
+
+            VehicleStatusReport.VehicleStatus odometerMiles = VehicleStatusRaw.vehicleStatus.First(status => status.key == "ODOMETER_MILES");
+            milage = Convert.ToInt32(odometerMiles.value);
+
+            if (milage == 0)
+            {
+                VehicleStatusReport.VehicleStatus odometerMetre = VehicleStatusRaw.vehicleStatus.First(status => status.key == "ODOMETER_METER");
+                milage = (int)(Convert.ToInt32(odometerMetre.value) / 1000 / 1.609);
+            }
+
+            return milage;
         }
 
         /// <summary>
