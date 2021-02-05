@@ -17,7 +17,7 @@ namespace JlrSharpRunner
             UserDetails userDetails = new UserDetails
             {
                 DeviceId = Guid.Parse(""),
-                DeviceIdExpiry = DateTime.Now.AddHours(24),
+                DeviceIdExpiry = DateTime.Parse(""),
                 Email = "",
                 UserId = "",
             };
@@ -25,7 +25,7 @@ namespace JlrSharpRunner
             TokenStore tokenStore = new TokenStore
             {
                 access_token = "",
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.Parse("")
             };
 
             // Set the pin
