@@ -166,7 +166,7 @@ namespace JlrSharp.Responses
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Honk and blink", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Honk and blink", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -206,7 +206,7 @@ namespace JlrSharp.Responses
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Unlock vehicle", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Unlock vehicle", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -226,7 +226,7 @@ namespace JlrSharp.Responses
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Get attributes", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Get attributes", restResponse.Content, restResponse.ErrorException);
             }
 
             Attributes = restResponse.Data;
@@ -250,7 +250,7 @@ namespace JlrSharp.Responses
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Get subscriptions", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Get subscriptions", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -264,7 +264,7 @@ namespace JlrSharp.Responses
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Get vehicle status", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Get vehicle status", restResponse.Content, restResponse.ErrorException);
             }
 
             VehicleStatusRaw = restResponse.Data;

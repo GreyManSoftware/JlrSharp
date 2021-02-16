@@ -27,7 +27,7 @@ namespace JlrSharp.Responses
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Get Climate Settings", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Get Climate Settings", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -46,7 +46,7 @@ namespace JlrSharp.Responses
 
             if (!restResponse.IsSuccessful || restResponse.StatusCode == System.Net.HttpStatusCode.NoContent)
             {
-                throw new RequestException("Set Climate Settings", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Set Climate Settings", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -71,7 +71,7 @@ namespace JlrSharp.Responses
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Start Engine", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Start Engine", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -90,7 +90,7 @@ namespace JlrSharp.Responses
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Stop Engine", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Stop Engine", restResponse.Content, restResponse.ErrorException);
             }
         }
 

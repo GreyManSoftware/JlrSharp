@@ -59,7 +59,7 @@ namespace JlrSharp.Responses.Vehicles
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Ev pre-condition", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Ev pre-condition", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -126,7 +126,7 @@ namespace JlrSharp.Responses.Vehicles
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Start charging", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Start charging", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -148,7 +148,7 @@ namespace JlrSharp.Responses.Vehicles
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Stop charging", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Stop charging", restResponse.Content, restResponse.ErrorException);
             }
         }
 

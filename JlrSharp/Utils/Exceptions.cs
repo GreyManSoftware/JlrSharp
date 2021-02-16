@@ -45,7 +45,7 @@ namespace JlrSharp.Utils
                 throw new InvalidPinException(apiCommand, errorMessage, restRequestException);
             }
 
-            throw new RequestException(apiCommand, errorMessage, restRequestException);
+            RequestException.GenerateRequestException(apiCommand, errorMessage, restRequestException);
         }
     }
 }
