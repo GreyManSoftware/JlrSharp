@@ -4,6 +4,20 @@ using System.Text;
 
 namespace JlrSharp.Utils
 {
+    public class InvalidPinException : RequestException
+    { 
+        public InvalidPinException(string apiCommand, string errorMessage, Exception restRequestException) : base(apiCommand, errorMessage, restRequestException)
+        {
+        }
+    }
+
+    public class ServiceAlreadyStartedException : RequestException
+    {
+        public ServiceAlreadyStartedException(string apiCommand, string errorMessage, Exception restRequestException) : base(apiCommand, errorMessage, restRequestException)
+        {
+        }
+    }
+
     public class RequestException : Exception
     {
         public string ApiCommand { get; set; }
@@ -15,6 +29,23 @@ namespace JlrSharp.Utils
             ApiCommand = apiCommand;
             ErrorMessage = errorMessage;
             RestRequestException = restRequestException;
+        }
+
+        public static void GenerateRequestException(string apiCommand, string errorMessage, Exception restRequestException)
+        {
+            // Service already started
+            if (errorMessage == @"{""errorLabel"":""ServiceAlreadyStarted"",""errorDescription"":""Service is already started""}")
+            {
+                throw new ServiceAlreadyStartedException(apiCommand, errorMessage, restRequestException);
+            }
+
+            // Invalid pin
+            if (errorMessage.StartsWith(@"{""errorLabel"":""InvalidCredentials"""))
+            {
+                throw new InvalidPinException(apiCommand, errorMessage, restRequestException);
+            }
+
+            throw new RequestException(apiCommand, errorMessage, restRequestException);
         }
     }
 }

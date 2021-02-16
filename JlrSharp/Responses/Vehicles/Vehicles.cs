@@ -186,7 +186,7 @@ namespace JlrSharp.Responses
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Lock vehicle", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Lock vehicle", restResponse.Content, restResponse.ErrorException);
             }
         }
 
@@ -284,7 +284,7 @@ namespace JlrSharp.Responses
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException($"Error generating { serviceName } token", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException($"Error generating { serviceName } token", restResponse.Content, restResponse.ErrorException);
             }
 
             return JsonConvert.DeserializeObject<ApiResponse>(restResponse.Content);

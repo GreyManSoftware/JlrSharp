@@ -37,7 +37,7 @@ namespace JlrSharp.Responses.Vehicles
 
             if (!restResponse.IsSuccessful)
             {
-                throw new RequestException("Ev pre-condition", restResponse.Content, restResponse.ErrorException);
+                RequestException.GenerateRequestException("Ev pre-condition", restResponse.Content, restResponse.ErrorException);
             }
         }
 
