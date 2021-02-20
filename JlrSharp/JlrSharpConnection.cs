@@ -158,7 +158,7 @@ namespace JlrSharp
                 if (response.StatusCode == System.Net.HttpStatusCode.BadGateway ||
                     response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
                 {
-                    throw new AuthenticationNetworkError($"{response.StatusDescription} - {response.StatusCode}");
+                    throw new AuthenticationNetworkErrorException($"{response.StatusDescription} - {response.StatusCode}");
                 }
 
                 throw new AuthenticationException("Error authenticating with OAuth Token");
