@@ -4,9 +4,9 @@ using System.Text;
 
 namespace JlrSharp.Utils
 {
-    public class AuthenticationNetworkError : Exception
+    public class AuthenticationNetworkErrorException : Exception
     {
-        public AuthenticationNetworkError(string message) : base(message)
+        public AuthenticationNetworkErrorException(string message) : base(message)
         {
         }
     }
