@@ -4,6 +4,13 @@ using System.Text;
 
 namespace JlrSharp.Utils
 {
+    public class AuthenticationNetworkError : Exception
+    {
+        public AuthenticationNetworkError(string message) : base(message)
+        {
+        }
+    }
+    
     public class InvalidPinException : RequestException
     { 
         public InvalidPinException(string apiCommand, string errorMessage, Exception restRequestException) : base(apiCommand, errorMessage, restRequestException)
