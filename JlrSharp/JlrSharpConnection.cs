@@ -155,13 +155,16 @@ namespace JlrSharp
 
             if (!response.IsSuccessful)
             {
-                if (response.StatusCode == System.Net.HttpStatusCode.BadGateway ||
-                    response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
+                // Check for indications of email/password issues
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                    response.StatusCode == System.Net.HttpStatusCode.Forbidden)
                 {
-                    throw new AuthenticationNetworkErrorException($"{response.StatusDescription} - {response.StatusCode}");
+                    throw new AuthenticationException("Error authenticating with OAuth Token");
+                    
                 }
 
-                throw new AuthenticationException("Error authenticating with OAuth Token");
+                // Network failure of some kind
+                throw new AuthenticationNetworkErrorException($"{response.StatusDescription} - {response.StatusCode}");
             }
 
             _tokens = response.Data;
@@ -288,6 +291,11 @@ namespace JlrSharp
             }
 
             DummyVehicleCollection vehicleData = JsonConvert.DeserializeObject<DummyVehicleCollection>(response.Content);
+
+            if (vehicleData.vehicles == null)
+            {
+                throw new NoVehiclesOnAccountException();
+            }
 
             _vehicles = new VehicleCollection();
 

@@ -4,13 +4,26 @@ using System.Text;
 
 namespace JlrSharp.Utils
 {
+    /// <summary>
+    /// Thrown during login if the JLR Endpoint is unhealthy
+    /// </summary>
     public class AuthenticationNetworkErrorException : Exception
     {
         public AuthenticationNetworkErrorException(string message) : base(message)
         {
         }
     }
+
+    /// <summary>
+    /// Thrown if an account has no vehicles associated with it
+    /// </summary>
+    public class NoVehiclesOnAccountException : Exception
+    {
+    }
     
+    /// <summary>
+    /// Thrown if an incorrect pin is provided
+    /// </summary>
     public class InvalidPinException : RequestException
     { 
         public InvalidPinException(string apiCommand, string errorMessage, Exception restRequestException) : base(apiCommand, errorMessage, restRequestException)
@@ -18,6 +31,9 @@ namespace JlrSharp.Utils
         }
     }
 
+    /// <summary>
+    /// Thrown if a duplicate command is executed
+    /// </summary>
     public class ServiceAlreadyStartedException : RequestException
     {
         public ServiceAlreadyStartedException(string apiCommand, string errorMessage, Exception restRequestException) : base(apiCommand, errorMessage, restRequestException)
@@ -25,6 +41,9 @@ namespace JlrSharp.Utils
         }
     }
 
+    /// <summary>
+    /// Thrown when the JLR Endpoint returns an error
+    /// </summary>
     public class RequestException : Exception
     {
         public string ApiCommand { get; set; }
@@ -38,6 +57,12 @@ namespace JlrSharp.Utils
             RestRequestException = restRequestException;
         }
 
+        /// <summary>
+        /// Used to generate the appropriate <see cref="RequestException"/>
+        /// </summary>
+        /// <param name="apiCommand">The API path being called</param>
+        /// <param name="errorMessage">The error message</param>
+        /// <param name="restRequestException">The request exception</param>
         public static void GenerateRequestException(string apiCommand, string errorMessage, Exception restRequestException)
         {
             // Service already started
