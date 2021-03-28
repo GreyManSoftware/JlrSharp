@@ -24,11 +24,24 @@ namespace JlrSharp.Responses
         public string userId { get; set; }
         public string vin { get; set; }
         public string role { get; set; }
-        protected VehicleAttributes Attributes { get; set; }
-        protected VehicleStatusReport VehicleStatusRaw { get; set; }
+        private VehicleAttributes _attributes;
+        private VehicleStatusReport _vehicleStatusRaw;
+
+        protected VehicleAttributes Attributes
+        {
+            get => _attributes ??= GetVehicleAttributes();
+            set => _attributes = value;
+        }
+
+        protected VehicleStatusReport VehicleStatusRaw
+        {
+            get => _vehicleStatusRaw ??= GetVehicleStatusReport();
+            set => _vehicleStatusRaw = value;
+        }
+
         public VehicleStatus Status => new VehicleStatus(this);
         public bool AutoRefreshTokens { get; set; }
-        public VehicleFuelType FuelType { get; set; }
+        public VehicleFuelType FuelType => GetFuelType();
 
         /// <summary>
         /// Retrieves the next service due in miles
@@ -44,18 +57,17 @@ namespace JlrSharp.Responses
         /// </summary>
         public int GetMileage()
         {
-            int milage = 0;
-
             VehicleStatusReport.VehicleStatus odometerMiles = VehicleStatusRaw.vehicleStatus.First(status => status.key == "ODOMETER_MILES");
-            milage = Convert.ToInt32(odometerMiles.value);
+            int mileage = Convert.ToInt32(odometerMiles.value);
 
-            if (milage == 0)
+            if (mileage == 0)
             {
                 VehicleStatusReport.VehicleStatus odometerMetre = VehicleStatusRaw.vehicleStatus.First(status => status.key == "ODOMETER_METER");
-                milage = (int)(Convert.ToInt32(odometerMetre.value) / 1000 / 1.609);
+                // ReSharper disable once PossibleLossOfFraction
+                mileage = (int)(Convert.ToInt32(odometerMetre.value) / 1000 / 1.609);
             }
 
-            return milage;
+            return mileage;
         }
 
         /// <summary>
@@ -188,6 +200,8 @@ namespace JlrSharp.Responses
             {
                 RequestException.GenerateRequestException("Lock vehicle", restResponse.Content, restResponse.ErrorException);
             }
+
+            UpdateVehicleStatus();
         }
 
         /// <summary>
@@ -208,6 +222,8 @@ namespace JlrSharp.Responses
             {
                 RequestException.GenerateRequestException("Unlock vehicle", restResponse.Content, restResponse.ErrorException);
             }
+
+            UpdateVehicleStatus();
         }
 
         /// <summary>
@@ -219,7 +235,7 @@ namespace JlrSharp.Responses
             return Convert.ToBoolean(VehicleStatusRaw.vehicleStatus.First(lockedDoors => lockedDoors.key == "DOOR_IS_ALL_DOORS_LOCKED").value);
         }
 
-        public void GetVehicleAttributes()
+        public VehicleAttributes GetVehicleAttributes()
         {
             HttpHeaders httpHeaders = new HttpHeaders { ["Accept"] = @"application/vnd.ngtp.org.VehicleAttributes-v4+json" };
             IRestResponse<VehicleAttributes> restResponse = GetRequest<VehicleAttributes>($"vehicles/{vin}/attributes", httpHeaders);
@@ -229,16 +245,30 @@ namespace JlrSharp.Responses
                 RequestException.GenerateRequestException("Get attributes", restResponse.Content, restResponse.ErrorException);
             }
 
-            Attributes = restResponse.Data;
+            return restResponse.Data;
+        }
 
+        /// <summary>
+        /// Determines the fuel type of the vehicle
+        /// </summary>
+        private VehicleFuelType GetFuelType()
+        {
             if (Attributes.fuelType.Equals("electric", StringComparison.OrdinalIgnoreCase))
             {
-                FuelType = VehicleFuelType.Ev;
+                return VehicleFuelType.Bev;
             }
-            else
+
+            if (VehicleStatusRaw.vehicleStatus.Any(status => status.key.Contains("PHEV")))
             {
-                FuelType = VehicleFuelType.Gasoline;
+                return VehicleFuelType.Phev;
             }
+
+            if (Attributes.fuelType.Equals("Petrol", StringComparison.OrdinalIgnoreCase) || Attributes.fuelType.Equals("Diesel", StringComparison.OrdinalIgnoreCase))
+            {
+                return VehicleFuelType.Gasoline;
+            }
+
+            return VehicleFuelType.Unknown;
         }
 
         /// <summary>
@@ -257,7 +287,7 @@ namespace JlrSharp.Responses
         /// <summary>
         /// Populates the vehicle status report
         /// </summary>
-        public void GetVehicleStatusReport()
+        public VehicleStatusReport GetVehicleStatusReport()
         {
             HttpHeaders httpHeaders = new HttpHeaders { ["Accept"] = @"application/vnd.ngtp.org.if9.healthstatus-v2+json" };
             IRestResponse<VehicleStatusReport> restResponse = GetRequest<VehicleStatusReport>($"vehicles/{vin}/status", httpHeaders);
@@ -267,7 +297,7 @@ namespace JlrSharp.Responses
                 RequestException.GenerateRequestException("Get vehicle status", restResponse.Content, restResponse.ErrorException);
             }
 
-            VehicleStatusRaw = restResponse.Data;
+            return restResponse.Data;
         }
 
         /// <summary>
@@ -391,6 +421,34 @@ namespace JlrSharp.Responses
         {
             VehicleRequestClient = vehicleRequestClient;
             JlrSharpConnector = jlrSharpConnection;
+        }
+
+        /// <summary>
+        /// Used to refresh vehicle status after certain commands have executed that might affect vehicle state
+        /// </summary>
+        protected void UpdateVehicleStatus()
+        {
+            VehicleStatusRaw = GetVehicleStatusReport();
+        }
+
+        /// <summary>
+        /// Creates the correct vehicle object based on fuel type
+        /// </summary>
+        /// <param name="vehicle"></param>
+        /// <returns></returns>
+        public static Vehicle CreateVehicle(Vehicle vehicle)
+        {
+            switch (vehicle.FuelType)
+            {
+                case VehicleFuelType.Gasoline:
+                    return new GasVehicle(vehicle);
+                case VehicleFuelType.Bev:
+                    return new ElectricVehicle(vehicle);
+                case VehicleFuelType.Phev:
+                    return new PhevVehicle(vehicle);
+                default:
+                    throw new UnknownFuelTypeException();
+            }
         }
     }
 }

@@ -20,7 +20,14 @@ namespace JlrSharp.Utils
     public class NoVehiclesOnAccountException : Exception
     {
     }
-    
+
+    /// <summary>
+    /// Thrown if a vehicle has an unidentified fuel type
+    /// </summary>
+    public class UnknownFuelTypeException : Exception
+    {
+    }
+
     /// <summary>
     /// Thrown if an incorrect pin is provided
     /// </summary>
