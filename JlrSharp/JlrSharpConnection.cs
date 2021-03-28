@@ -160,7 +160,7 @@ namespace JlrSharp
                     response.StatusCode == System.Net.HttpStatusCode.Forbidden)
                 {
                     throw new AuthenticationException("Error authenticating with OAuth Token");
-                    
+
                 }
 
                 // Network failure of some kind
@@ -305,30 +305,11 @@ namespace JlrSharp
                 vehicle.SetVehicleRequestClient(_vehicleClient, this);
                 vehicle.AutoRefreshTokens = AutoRefreshTokens;
 
-                // Grab attributes so we can answer the information below
-                vehicle.GetVehicleAttributes();
+                // Convert the dummy vehicle into the correct type
+                Vehicle specificVehicle = Vehicle.CreateVehicle(vehicle);
 
-                Vehicle specificVehicle = null;
-
-                if (vehicle.FuelType == VehicleFuelType.Gasoline)
-                {
-                    specificVehicle = new GasVehicle(vehicle);
-                }
-                else if (vehicle.FuelType == VehicleFuelType.Ev)
-                {
-                    specificVehicle = new ElectricVehicle(vehicle);
-                }
-
-                if (specificVehicle == null)
-                {
-                    throw new Exception($"Unidentified vehicle fuel type");
-                }
-
-                Trace.TraceInformation($"Processing vehicle model \"{vehicle.Model}\"");
-
+                Trace.TraceInformation($"Processing vehicle model \"{vehicle.Model} - {vehicle.FuelType.ToString().ToUpperInvariant()}\"");
                 specificVehicle.SetVehicleRequestClient(_vehicleClient, this);
-                specificVehicle.GetVehicleStatusReport();
-                specificVehicle.GetVehicleAttributes();
                 _vehicles.Vehicles.Add(specificVehicle);
             }
         }

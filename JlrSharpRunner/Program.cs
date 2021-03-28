@@ -28,7 +28,7 @@ namespace JlrSharpRunner
                 CreatedDate = DateTime.Parse("")
             };
 
-            // Set the pin
+            //// Set the pin
             string myPin = "1234";
 
             // Connect to the JLR API with token data
@@ -44,24 +44,35 @@ namespace JlrSharpRunner
 
             Console.WriteLine($"Mileage: {defaultVehicle.GetMileage()}");
             Console.WriteLine($"Distance until empty: {defaultVehicle.GetDistanceUntilEmpty()}");
-            defaultVehicle.Unlock(myPin);
+            //defaultVehicle.Unlock(myPin);
             // wait before issuing these back to back
-            defaultVehicle.Lock(myPin);
+            //defaultVehicle.Lock(myPin);
 
             // Determine the vehicle type
             if (defaultVehicle is GasVehicle gasVehicle)
             {
                 Console.WriteLine($"The fuel level is at {gasVehicle.GetFuelLevelPercentage()}%");
-                gasVehicle.StartEngine(myPin);
+                //gasVehicle.StartEngine(myPin);
                 // wait before issuing these back to back
-                gasVehicle.StopEngine(myPin);
+                //gasVehicle.StopEngine(myPin);
+            }
+            else if (defaultVehicle is PhevVehicle phevVehicle)
+            {
+                Console.WriteLine($"Vehicle is charging: {phevVehicle.IsCharging()}");
+                Console.WriteLine($"Time until charged: {phevVehicle.GetTimeUntilCharged()}");
+                Console.WriteLine($"Charge level: {phevVehicle.GetChargeLevel()}");
+                Console.WriteLine($"Battery Range: {phevVehicle.GetBatteryRange()}");
+                Console.WriteLine($"Total Range: {phevVehicle.GetDistanceUntilEmpty()}");
             }
             else if (defaultVehicle is ElectricVehicle electricVehicle)
             {
                 Console.WriteLine($"Vehicle is charging: {electricVehicle.IsCharging()}");
                 Console.WriteLine($"Time until charged: {electricVehicle.GetTimeUntilCharged()}");
                 Console.WriteLine($"Charge level: {electricVehicle.GetChargeLevel()}");
-                electricVehicle.StopCharging(myPin);
+                //electricVehicle.StartClimatePreconditioning(myPin);
+                //electricVehicle.StopClimatePreconditioning(myPin);
+                //electricVehicle.StopCharging(myPin);
+                //electricVehicle.StartCharging(myPin);
             }
         }
     }

@@ -9,7 +9,7 @@ using RestSharp;
 
 namespace JlrSharp.Responses.Vehicles
 {
-    public sealed class ElectricVehicle : Vehicle
+    public class ElectricVehicle : Vehicle
     {
         public ElectricVehicle(Vehicle vehicle)
         {
@@ -39,6 +39,8 @@ namespace JlrSharp.Responses.Vehicles
             {
                 RequestException.GenerateRequestException("Ev pre-condition", restResponse.Content, restResponse.ErrorException);
             }
+
+            UpdateVehicleStatus();
         }
 
         /// <summary>
@@ -61,6 +63,8 @@ namespace JlrSharp.Responses.Vehicles
             {
                 RequestException.GenerateRequestException("Ev pre-condition", restResponse.Content, restResponse.ErrorException);
             }
+
+            UpdateVehicleStatus();
         }
 
         /// <summary>
@@ -128,6 +132,8 @@ namespace JlrSharp.Responses.Vehicles
             {
                 RequestException.GenerateRequestException("Start charging", restResponse.Content, restResponse.ErrorException);
             }
+
+            UpdateVehicleStatus();
         }
 
         /// <summary>
@@ -150,6 +156,8 @@ namespace JlrSharp.Responses.Vehicles
             {
                 RequestException.GenerateRequestException("Stop charging", restResponse.Content, restResponse.ErrorException);
             }
+
+            UpdateVehicleStatus();
         }
 
         public override int GetDistanceUntilEmpty()

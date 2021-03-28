@@ -73,6 +73,8 @@ namespace JlrSharp.Responses
             {
                 RequestException.GenerateRequestException("Start Engine", restResponse.Content, restResponse.ErrorException);
             }
+
+            UpdateVehicleStatus();
         }
 
         /// <summary>
@@ -92,6 +94,8 @@ namespace JlrSharp.Responses
             {
                 RequestException.GenerateRequestException("Stop Engine", restResponse.Content, restResponse.ErrorException);
             }
+
+            UpdateVehicleStatus();
         }
 
         /// <summary>

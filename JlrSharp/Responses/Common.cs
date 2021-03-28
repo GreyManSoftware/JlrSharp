@@ -40,5 +40,10 @@ namespace JlrSharp.Responses
         public int FrontRight { get; set; }
         public int RearLeft { get; set; }
         public int RearRight { get; set; }
+
+        public override string ToString()
+        {
+            return $"Front Left: {FrontLeft}, Front Right: {FrontRight}, Rear Left: {RearLeft} and Rear Right: {RearRight}";
+        }
     }
 }

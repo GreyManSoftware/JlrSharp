@@ -8,8 +8,11 @@ namespace JlrSharp.Responses
 {
     public enum VehicleFuelType
     {
+        Unknown = 0,
         Gasoline = 1,
-        Ev = 2,
+        Bev = 2,
+        Phev = 3,
+        Mhev = 4,
     }
 
     public interface IVehicle
@@ -21,7 +24,7 @@ namespace JlrSharp.Responses
 
     public interface IVehicleBaseFunctionality
     {
-        VehicleFuelType FuelType { get; set; }
+        VehicleFuelType FuelType { get; }
         int GetServiceDueInMiles();
         int GetMileage();
         int GetDistanceUntilEmpty();
