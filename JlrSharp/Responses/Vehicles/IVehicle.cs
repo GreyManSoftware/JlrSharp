@@ -30,7 +30,7 @@ namespace JlrSharp.Responses
         int GetDistanceUntilEmpty();
         WindowStatus GetWindowStatus();
         TyrePressures GetTyrePressures();
-        void Lock(string pin);
-        void Unlock(string pin);
+        void Lock(string pin, bool updateStatus = false);
+        void Unlock(string pin, bool updateStatus = false);
     }
 }

@@ -185,7 +185,9 @@ namespace JlrSharp.Responses
         /// <summary>
         /// Locks the vehicle
         /// </summary>
-        public void Lock(string pin)
+        /// <param name="pin"></param>
+        /// <param name="updateStatus">Determines if the vehicle status should be updated after the command is executed</param>
+        public void Lock(string pin, bool updateStatus = false)
         {
             HttpHeaders httpHeaders = new HttpHeaders
             {
@@ -201,13 +203,18 @@ namespace JlrSharp.Responses
                 RequestException.GenerateRequestException("Lock vehicle", restResponse.Content, restResponse.ErrorException);
             }
 
-            UpdateVehicleStatus();
+            if (updateStatus)
+            {
+                UpdateVehicleStatus();
+            }
         }
 
         /// <summary>
         /// Unlocks the vehicle
         /// </summary>
-        public void Unlock(string pin)
+        /// <param name="pin"></param>
+        /// <param name="updateStatus">Determines if the vehicle status should be updated after the command is executed</param>
+        public void Unlock(string pin, bool updateStatus = false)
         {
             HttpHeaders httpHeaders = new HttpHeaders
             {
@@ -223,7 +230,10 @@ namespace JlrSharp.Responses
                 RequestException.GenerateRequestException("Unlock vehicle", restResponse.Content, restResponse.ErrorException);
             }
 
-            UpdateVehicleStatus();
+            if (updateStatus)
+            {
+                UpdateVehicleStatus();
+            }
         }
 
         /// <summary>

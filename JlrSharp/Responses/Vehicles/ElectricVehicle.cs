@@ -23,7 +23,8 @@ namespace JlrSharp.Responses.Vehicles
         /// </summary>
         /// <param name="pin">The users PIN</param>
         /// <param name="targetTemperature">Temperature is expressed without decimal point. 210 = 21.0</param>
-        public void StartClimatePreconditioning(string pin, string targetTemperature = "210")
+        /// <param name="updateStatus">Determines if the vehicle status should be updated after the command is executed</param>
+        public void StartClimatePreconditioning(string pin, string targetTemperature = "210", bool updateStatus = false)
         {
             HttpHeaders httpHeaders = new HttpHeaders
             {
@@ -40,14 +41,18 @@ namespace JlrSharp.Responses.Vehicles
                 RequestException.GenerateRequestException("Ev pre-condition", restResponse.Content, restResponse.ErrorException);
             }
 
-            UpdateVehicleStatus();
+            if (updateStatus)
+            {
+                UpdateVehicleStatus();
+            }
         }
 
         /// <summary>
         /// Stops the preconditioning for electric vehicles
         /// </summary>
         /// <param name="pin">The users PIN</param>
-        public void StopClimatePreconditioning(string pin)
+        /// <param name="updateStatus">Determines if the vehicle status should be updated after the command is executed</param>
+        public void StopClimatePreconditioning(string pin, bool updateStatus = false)
         {
             HttpHeaders httpHeaders = new HttpHeaders
             {
@@ -64,7 +69,10 @@ namespace JlrSharp.Responses.Vehicles
                 RequestException.GenerateRequestException("Ev pre-condition", restResponse.Content, restResponse.ErrorException);
             }
 
-            UpdateVehicleStatus();
+            if (updateStatus)
+            {
+                UpdateVehicleStatus();
+            }
         }
 
         /// <summary>
@@ -116,7 +124,8 @@ namespace JlrSharp.Responses.Vehicles
         /// Starts charging the vehicle to the pre-determined charge level
         /// </summary>
         /// <param name="pin"></param>
-        public void StartCharging(string pin)
+        /// <param name="updateStatus">Determines if the vehicle status should be updated after the command is executed</param>
+        public void StartCharging(string pin, bool updateStatus = false)
         {
             HttpHeaders httpHeaders = new HttpHeaders
             {
@@ -133,14 +142,18 @@ namespace JlrSharp.Responses.Vehicles
                 RequestException.GenerateRequestException("Start charging", restResponse.Content, restResponse.ErrorException);
             }
 
-            UpdateVehicleStatus();
+            if (updateStatus)
+            {
+                UpdateVehicleStatus();
+            }
         }
 
         /// <summary>
         /// Starts charging the vehicle to the pre-determined charge level
         /// </summary>
         /// <param name="pin"></param>
-        public void StopCharging(string pin)
+        /// <param name="updateStatus">Determines if the vehicle status should be updated after the command is executed</param>
+        public void StopCharging(string pin, bool updateStatus = false)
         {
             HttpHeaders httpHeaders = new HttpHeaders
             {
@@ -157,7 +170,10 @@ namespace JlrSharp.Responses.Vehicles
                 RequestException.GenerateRequestException("Stop charging", restResponse.Content, restResponse.ErrorException);
             }
 
-            UpdateVehicleStatus();
+            if (updateStatus)
+            {
+                UpdateVehicleStatus();
+            }
         }
 
         public override int GetDistanceUntilEmpty()

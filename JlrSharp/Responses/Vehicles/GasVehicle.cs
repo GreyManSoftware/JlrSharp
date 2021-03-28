@@ -59,7 +59,9 @@ namespace JlrSharp.Responses
         /// <summary>
         /// Starts the engine
         /// </summary>
-        public void StartEngine(string pin)
+        /// <param name="pin"></param>
+        /// <param name="updateStatus">Determines if the vehicle status should be updated after the command is executed</param>
+        public void StartEngine(string pin, bool updateStatus = false)
         {
             HttpHeaders httpHeaders = new HttpHeaders
             {
@@ -74,13 +76,18 @@ namespace JlrSharp.Responses
                 RequestException.GenerateRequestException("Start Engine", restResponse.Content, restResponse.ErrorException);
             }
 
-            UpdateVehicleStatus();
+            if (updateStatus)
+            {
+                UpdateVehicleStatus();
+            }
         }
 
         /// <summary>
         /// Stops the engine
         /// </summary>
-        public void StopEngine(string pin)
+        /// <param name="pin"></param>
+        /// <param name="updateStatus">Determines if the vehicle status should be updated after the command is executed</param>
+        public void StopEngine(string pin, bool updateStatus = false)
         {
             HttpHeaders httpHeaders = new HttpHeaders
             {
@@ -95,7 +102,10 @@ namespace JlrSharp.Responses
                 RequestException.GenerateRequestException("Stop Engine", restResponse.Content, restResponse.ErrorException);
             }
 
-            UpdateVehicleStatus();
+            if (updateStatus)
+            {
+                UpdateVehicleStatus();
+            }
         }
 
         /// <summary>
