@@ -241,7 +241,7 @@ namespace JlrSharp
             };
 
             deviceRegistrationRequest.AddJsonBody(deviceRegistrationData);
-            _userInfo.DeviceIdExpiry = DateTime.Now.AddSeconds(86400);
+            _userInfo.DeviceIdExpiry = DateTime.UtcNow.AddSeconds(86400);
             IRestResponse registrationResponse = _deviceClient.Execute(deviceRegistrationRequest);
 
             // HTTP Response code 204 indicates success
@@ -321,7 +321,7 @@ namespace JlrSharp
         public bool UpdateIfRequired(bool performRefresh)
         {
             // If the token has more than 15 mins remaining, it's fine
-            if (_tokens.ExpirationTime >= DateTime.Now.AddMinutes(15))
+            if (_tokens.ExpirationTime >= DateTime.UtcNow.AddMinutes(15))
             {
                 return false;
             }

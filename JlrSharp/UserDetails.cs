@@ -28,7 +28,7 @@ namespace JlrSharp
         public string refresh_token { get; set; }
         public string token_type { get; set; }
 
-        public DateTime CreatedDate = DateTime.Now;
+        public DateTime CreatedDate = DateTime.UtcNow;
         public DateTime ExpirationTime => CreatedDate.AddSeconds(Convert.ToInt32(expires_in));
     }
 }
